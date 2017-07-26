@@ -13,7 +13,11 @@ Table of contents
 
 ## Install
 
-To install the connector from source, use the following command.
+To install the connector from source, 
+
+Clone this repository to your local desktop, and then bring up a command prompt in the directory.
+
+and use the following command.
 
 ```
 mvn clean install -DskipTests
@@ -21,7 +25,7 @@ mvn clean install -DskipTests
 
 **Include the SAP HANA Jdbc Jar**
 
-- Follow the steps in [this](http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm) guide to access the SAP HANA Jdbc jar.
+- Follow the steps in [http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm](http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm) guide to access the SAP HANA Jdbc jar.
 - Place it in the same directory as the `Kafka Connector` jar or under the `CLASSPATH` directory.
 
 ## QuickStart
@@ -128,5 +132,11 @@ of the column can be `Int, Float, Decimal, Timestamp`. This considers SAP HANA T
 
 The `unit tests` provide examples on every possible mode in which the connector can be configured.
 
+## How to obtain support
 
+Raise Github issues to obtain support from project committers.
+
+## Contributing
+
+Contributions are accepted by sending Pull Requests to this repo.
 
