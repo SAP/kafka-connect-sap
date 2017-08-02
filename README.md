@@ -25,7 +25,7 @@ mvn clean install -DskipTests
 
 **Include the Jdbc Jar**
 
-#### For SAP Hana
+#####   For SAP Hana
 
 - Follow the steps in [http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm](http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm) guide to access the SAP HANA Jdbc jar.
 - Place it in the same directory as the `Kafka Connector` jar or under the `CLASSPATH` directory.
@@ -145,5 +145,5 @@ Contributions are accepted by sending Pull Requests to this repo.
 ## Todos
 
 Currently only SAP Hana is supported.
-Support for SAP ASE Relational DB server to be added.
+Support for SAP HANA VORA(In Memory and Disk Engine) to be added.
 
