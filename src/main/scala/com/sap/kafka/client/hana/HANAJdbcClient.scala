@@ -408,8 +408,11 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
       case java.sql.Types.BINARY | java.sql.Types.VARBINARY |
         java.sql.Types.LONGVARBINARY | java.sql.Types.BLOB => resultSet.getBytes(index)
 
-      case java.sql.Types.TINYINT | java.sql.Types.INTEGER |
-        java.sql.Types.SMALLINT => resultSet.getInt(index)
+      case java.sql.Types.TINYINT => resultSet.getByte(index)
+
+      case java.sql.Types.SMALLINT => resultSet.getShort(index)
+
+      case java.sql.Types.INTEGER => resultSet.getInt(index)
 
       case java.sql.Types.BIGINT => resultSet.getLong(index)
 
