@@ -18,6 +18,8 @@ class MockTime extends Time {
     nanos
   }
 
+  override def hiResClockMs(): Long = ???
+
   override def sleep(ms: Long): Unit = {
     this.nanos += TimeUnit.NANOSECONDS.convert(ms, TimeUnit.MILLISECONDS)
   }
