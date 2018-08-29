@@ -113,14 +113,16 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
 
   * `mode` - This setting can be used to specify the mode in which data should be fetched from SAP DB table. Default is `bulk`. And supported values are `bulk, incrementing`.
 
-  * `queryMode` - This setting can be used to specify the query mode in which data should be fetched from SAP DB table. Default is `table`. And supported values are `table, query ( to support sql queries )`.
+  * `queryMode` - This setting can be used to specify the query mode in which data should be fetched from SAP DB table. Default is `table`. And supported values are `table, query ( to support sql queries )`. When 
+using `queryMode: query` it is also required to have `query` parameter defined. This query parameter needs to be prepended by TopicName. If the `incrementing.column.name` property is used together, then it can be omitted
+from where clause in query sql. 
 
   * `{topic}.table.name` - This setting allows specifying the SAP DB table name where the data needs to be written to. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
 
   * `{topic}.poll.interval.ms` - This setting allows specifying the poll interval at which the data should be fetched from SAP DB table. Should be an `Integer`. Default value is `60000`.
 
   * `{topic}.incrementing.column.name` - In order to fetch data from a SAP DB table when `mode` is set to `incrementing`, an incremental ( or auto-incremental ) column needs to be provided. The type 
-of the column can be `Int, Float, Decimal, Timestamp`. This considers SAP DB Timeseries tables also. Should be a valid clumn name ( respresented as a `String`) present in the table.
+of the column can be `Int, Float, Decimal, Timestamp`. This considers SAP DB Timeseries tables also. Should be a valid clumn name ( respresented as a `String`) present in the table. 
  
   * `{topic}.partition.count` - This setting can be used to specify the no. of topic partitions that the Source connector can use to publish the data. Should be an `Integer`. Default value is `1`.
 
