@@ -24,11 +24,17 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
   private var metaSchema: MetaSchema = null
   var tableConfigInitialized = false
 
-  private def initTableConfig(nameSpace: Option[String], tableName: String) : Boolean = {
+  private def initTableConfig(nameSpace: Option[String], tableName: String, topic: String) : Boolean = {
 
     tableConfigInitialized match {
       case false =>
-        if(client.tableExists(nameSpace, tableName)){
+        if (config.topicProperties(topic)("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE) {
+          if (client.collectionExists(tableName)) {
+            tableMetaData = client.getMetaData(tableName, nameSpace)
+            metaSchema = new MetaSchema(tableMetaData, null)
+            tableConfigInitialized = true
+          }
+        } else if(client.tableExists(nameSpace, tableName)){
           tableMetaData = client.getMetaData(tableName, nameSpace)
           metaSchema = new MetaSchema(tableMetaData, null)
           tableConfigInitialized = true
@@ -42,7 +48,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     val recordHead = records.head
     val recordSchema = KeyValueSchema(recordHead.keySchema(), recordHead.valueSchema())
 
-    initTableConfig(getTableName._1,getTableName._2) match
+    initTableConfig(getTableName._1,getTableName._2, recordHead.topic()) match
     {
       case true =>
         log.info(s"""Table $tableName exists.Validate the schema and check if schema needs to evolve""")
@@ -65,7 +71,8 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
             recordFields = recordFields :+ fieldAttr
           }
         }
-        if(!compareSchema(recordFields))
+        if(config.topicProperties(recordHead.topic())("table.type") != BaseConfigConstants.COLLECTION_TABLE_TYPE
+            && !compareSchema(recordFields))
           {
             log.error(
               s"""Table $tableName has a different schema from the record Schema.
@@ -129,9 +136,13 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
             client.createTable(getTableName._1, getTableName._2, metaSchema,
               config.batchSize, tableType, keys, partitionType, partitionCount.toInt)
           } else {
-            client.createTable(getTableName._1, getTableName._2,
-              metaSchema, config.batchSize, tableType, partitionType = partitionType,
-              partitionCount = partitionCount.toInt)
+            if (config.topicProperties(recordHead.topic())("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE) {
+              client.createCollection(getTableName._2)
+            } else {
+              client.createTable(getTableName._1, getTableName._2,
+                metaSchema, config.batchSize, tableType, partitionType = partitionType,
+                partitionCount = partitionCount.toInt)
+            }
           }
           client.getMetaData(getTableName._2,getTableName._1)
         } else {
@@ -142,7 +153,11 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
   }
 
   private[sink] def flush(): Seq[SinkRecord] = {
-    client.loadData(getTableName._1, getTableName._2, connection, metaSchema, records,  config.batchSize)
+    if (config.topicProperties(records.head.topic())("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE) {
+      client.loadData(getTableName._2, connection, metaSchema, records, config.batchSize)
+    } else {
+      client.loadData(getTableName._1, getTableName._2, connection, metaSchema, records, config.batchSize)
+    }
     val flushedRecords = records
     records = Seq.empty[SinkRecord]
     flushedRecords
@@ -156,6 +171,8 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     tableName match {
       case BaseConfigConstants.TABLE_NAME_FORMAT(schema, table) =>
         (Some(schema), table)
+      case BaseConfigConstants.COLLECTION_NAME_FORMAT(table) =>
+        (None, table)
       case _ =>
         throw new HANAConfigInvalidInputException(s"The table name mentioned in `{topic}.table.name` is invalid." +
           s" Does not follow naming conventions")

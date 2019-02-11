@@ -36,27 +36,31 @@ class HANASourceTask extends GenericSourceTask {
 
     var stmtToFetchPartitions = s"SELECT SCHEMA_NAME, TABLE_NAME, PARTITION FROM SYS.M_CS_PARTITIONS WHERE "
     tables.foreach(table => {
-      table._1 match {
-        case BaseConfigConstants.TABLE_NAME_FORMAT(schema, tablename) =>
-          stmtToFetchPartitions += s"(SCHEMA_NAME = '$schema' AND TABLE_NAME = '$tablename')"
+      if (!(config.topicProperties(table._2)("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE)) {
+        table._1 match {
+          case BaseConfigConstants.TABLE_NAME_FORMAT(schema, tablename) =>
+            stmtToFetchPartitions += s"(SCHEMA_NAME = '$schema' AND TABLE_NAME = '$tablename')"
 
-          if (tablecount < noOfTables) {
-            stmtToFetchPartitions += " OR "
-          }
-          tablecount = tablecount + 1
-        case _ =>
-          throw new HANAConfigInvalidInputException("The table name is invalid. Does not follow naming conventions")
+            if (tablecount < noOfTables) {
+              stmtToFetchPartitions += " OR "
+            }
+            tablecount = tablecount + 1
+          case _ =>
+            throw new HANAConfigInvalidInputException("The table name is invalid. Does not follow naming conventions")
+        }
       }
     })
 
-    val stmt = connection.createStatement()
-    val partitionRs = stmt.executeQuery(stmtToFetchPartitions)
+    if (tablecount > 1) {
+      val stmt = connection.createStatement()
+      val partitionRs = stmt.executeQuery(stmtToFetchPartitions)
 
-    while(partitionRs.next()) {
-      val tableName = "\"" + partitionRs.getString(1) + "\".\"" + partitionRs.getString(2) + "\""
-      tableInfos :+= Tuple4(tableName, partitionRs.getInt(3), tableName + partitionRs.getInt(3),
-        tables.filter(table => table._1 == tableName)
-          .map(table => table._2).head.toString)
+      while (partitionRs.next()) {
+        val tableName = "\"" + partitionRs.getString(1) + "\".\"" + partitionRs.getString(2) + "\""
+        tableInfos :+= Tuple4(tableName, partitionRs.getInt(3), tableName + partitionRs.getInt(3),
+          tables.filter(table => table._1 == tableName)
+            .map(table => table._2).head.toString)
+      }
     }
 
     // fill tableInfo for tables whose entry is not in M_CS_PARTITIONS
@@ -64,7 +68,11 @@ class HANASourceTask extends GenericSourceTask {
     val tablesToBeAdded = tables.filterNot(table => tablesInInfo.contains(table._1))
 
     tablesToBeAdded.foreach(tableToBeAdded => {
-      tableInfos :+= Tuple4(tableToBeAdded._1, 0, tableToBeAdded._1 + "0", tableToBeAdded._2)
+      if (config.topicProperties(tableToBeAdded._2)("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE) {
+        tableInfos :+= Tuple4(getTableName(tableToBeAdded._1)._2, 0, getTableName(tableToBeAdded._1)._2 + "0", tableToBeAdded._2)
+      } else {
+        tableInfos :+= Tuple4(tableToBeAdded._1, 0, tableToBeAdded._1 + "0", tableToBeAdded._2)
+      }
     })
 
     tableInfos
@@ -72,4 +80,16 @@ class HANASourceTask extends GenericSourceTask {
 
   override protected def getQueries(queryTuple: List[(String, String)]): List[(String, Int, String, String)] =
     queryTuple.map(query => (query._1, 0, null, query._2))
+
+  private def getTableName(tableName: String): (Option[String], String) = {
+    tableName match {
+      case BaseConfigConstants.TABLE_NAME_FORMAT(schema, table) =>
+        (Some(schema), table)
+      case BaseConfigConstants.COLLECTION_NAME_FORMAT(table) =>
+        (None, table)
+      case _ =>
+        throw new HANAConfigInvalidInputException(s"The table name mentioned in `{topic}.table.name` is invalid." +
+          s" Does not follow naming conventions")
+    }
+  }
 }
