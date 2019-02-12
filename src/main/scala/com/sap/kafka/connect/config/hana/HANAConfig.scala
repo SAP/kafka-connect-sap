@@ -25,6 +25,8 @@ case class HANAConfig(props: Map[String, String]) extends BaseConfig(props: Map[
           topicPropMap.put("table.type", value)
         else if (value == BaseConfigConstants.ROW_TABLE_TYPE)
           topicPropMap.put("table.type", value)
+        else if (value == BaseConfigConstants.COLLECTION_TABLE_TYPE)
+          topicPropMap.put("table.type", value)
         else
           throw new HANAConfigMissingException(
             "Value specified is incorrect for 'table.type' parameter")

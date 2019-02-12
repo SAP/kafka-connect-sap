@@ -7,6 +7,7 @@ object BaseConfigConstants {
   val RECORD_VALUE = "record_value"
 
   val TABLE_NAME_FORMAT = "\"(.+)\"\\.\"(.+)\"".r
+  val COLLECTION_NAME_FORMAT = "\"(.+)\"".r
 
   val QUERY_MODE_TABLE = "table"
   val QUERY_MODE_SQL = "query"
@@ -16,6 +17,7 @@ object BaseConfigConstants {
 
   val COLUMN_TABLE_TYPE = "column"
   val ROW_TABLE_TYPE = "row"
+  val COLLECTION_TABLE_TYPE = "collection"
 
   val NO_PARTITION = "none"
   val HASH_PARTITION = "hash"

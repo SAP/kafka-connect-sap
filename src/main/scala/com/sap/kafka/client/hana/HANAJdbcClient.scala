@@ -2,7 +2,7 @@ package com.sap.kafka.client.hana
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import com.sap.kafka.client.{ColumnRow, MetaSchema, metaAttr}
+import com.sap.kafka.client.{ColumnRow, MetaSchema, hana, metaAttr}
 import com.sap.kafka.connect.config.hana.HANAConfig
 import com.sap.kafka.connect.config.{BaseConfigConstants, BaseParameters}
 import com.sap.kafka.utils.hana.HANASchemaBuilder
@@ -194,6 +194,28 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
     }
   }
 
+  def createCollection(collectionName: String): Unit = {
+    ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
+      new HANAJdbcException(s"Creation of collection $collectionName failed")) { () =>
+      val query = s"""CREATE COLLECTION $collectionName"""
+      log.info(s"Creating collection:$collectionName with SQL: $query")
+
+      val connection = getConnection
+      connection.setAutoCommit(false)
+      val stmt = connection.createStatement()
+      Try(stmt.execute(query)) match {
+        case Failure(ex) => log.error("Error during collection creation", ex)
+          stmt.close()
+          connection.close()
+          throw ex
+        case _ =>
+          stmt.close()
+          connection.commit()
+          connection.close()
+      }
+    }
+  }
+
   /**
    * Checks if the given table name corresponds to an existent
    * table in the HANA backend within the provided namespace.
@@ -209,6 +231,23 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
         val dbMetaData = conn.getMetaData
         val tables = dbMetaData.getTables(null, namespace.orNull, tableName, null)
         tables.next()
+      }
+    }
+
+  def collectionExists(collectionName: String): Boolean =
+    ExecuteWithExceptions[Boolean, Exception, HANAJdbcException] (
+      new HANAJdbcException(s"Checking if collection $collectionName exists in hana backend failed")) { () =>
+      WithCloseables(getConnection) { conn =>
+        try {
+          val metaData = getMetadata(s"select * from $collectionName")
+          if (metaData != null) {
+            return true
+          }
+          return false
+        } catch {
+          case e: Exception =>
+            return false
+        }
       }
     }
 
@@ -320,6 +359,17 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
        val fullTableName = tableWithNamespace(namespace, tableName)
        HANAPartitionLoader.loadPartition(connection, fullTableName, records.iterator, schema, batchSize)
      }
+  }
+
+  def loadData(collectionName: String,
+               connection: Connection,
+               schema: MetaSchema,
+               records: Seq[SinkRecord],
+               batchSize: Int): Unit = {
+    ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
+      new HANAJdbcException(s"loading data into $collectionName is not successful")) { () =>
+      HANAPartitionLoader.loadPartitionForJsonStore(connection, collectionName, records.iterator, schema, batchSize)
+    }
   }
 
   /**
