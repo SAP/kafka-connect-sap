@@ -138,7 +138,10 @@ The `unit tests` provide examples on every possible mode in which the connector 
 
 ## How to obtain support
 
-Raise Github issues to obtain support from project committers.
+Raise Github issues to obtain support from project committers:
+Santosh Addanki (santosh.kumar.addanki@sap.com)
+Subhobrata Dey  (subhobrata.dey@sap.com)
+
 
 ## Contributing
 
@@ -147,7 +150,7 @@ Contributions are accepted by sending Pull Requests to this repo.
 ## Todos
 
 Currently only SAP Hana is supported.
-Support for SAP HANA VORA(In Memory and Disk Engine) to be added.
+
 
 ## License
 Copyright (c) 2017 SAP SE or an SAP affiliate company. All rights reserved.
