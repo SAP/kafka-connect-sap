@@ -76,7 +76,7 @@ kafka_source_1.table.name="SYSTEM"."com.sap.test::hello"
 
 #### Distributed Mode
 
-In a production environment, it is suggested to run the Kafka Connector on [distributed mode](http://docs.confluent.io/3.0.0/connect/userguide.html#distributed-mode)
+In a production environment, it is suggested to run the Kafka Connector on [distributed mode](https://docs.confluent.io/current/connect/userguide.html#distributed-mode)
 
 
 ## Configuration
@@ -117,7 +117,7 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
 using `queryMode: query` it is also required to have `query` parameter defined. This query parameter needs to be prepended by TopicName. If the `incrementing.column.name` property is used together, then it can be omitted
 from where clause in query sql. 
 
-  * `{topic}.table.name` - This setting allows specifying the SAP DB table name where the data needs to be written to. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
+  * `{topic}.table.name` - This setting allows specifying the SAP DB table name where the data needs to be read from. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
 
   * `{topic}.poll.interval.ms` - This setting allows specifying the poll interval at which the data should be fetched from SAP DB table. Should be an `Integer`. Default value is `60000`.
 
