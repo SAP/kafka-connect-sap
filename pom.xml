@@ -16,7 +16,7 @@
     <repositories>
         <repository>
             <id>confluent</id>
-            <url>http://packages.confluent.io/maven/</url>
+            <url>https://packages.confluent.io/maven/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -24,7 +24,7 @@
         <repository>
             <id>central</id>
             <name>central</name>
-            <url>http://central.maven.org/maven2/</url>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
 
