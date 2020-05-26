@@ -1,12 +1,11 @@
 package com.sap.kafka.connect.source
 
-import java.lang.{Boolean, Double, Float, Long}
 import com.sap.kafka.client.MetaSchema
 import org.apache.kafka.connect.data.Schema.Type
 import org.apache.kafka.connect.data.{Field, Schema, Struct}
 import org.apache.kafka.connect.source.SourceRecord
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
 
@@ -21,23 +20,23 @@ class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
   }
 
   test("boolean type") {
-    typeConversion(Schema.BOOLEAN_SCHEMA, true, new Boolean(false),
-      Schema.BOOLEAN_SCHEMA, new Boolean(false))
+    typeConversion(Schema.BOOLEAN_SCHEMA, true, java.lang.Boolean.FALSE,
+      Schema.BOOLEAN_SCHEMA, java.lang.Boolean.FALSE)
   }
 
   test("int type") {
-    typeConversion(Schema.INT32_SCHEMA, true, new Integer(1),
+    typeConversion(Schema.INT32_SCHEMA, true, new java.lang.Integer(1),
       Schema.INT32_SCHEMA, new Integer(1))
   }
 
   test("long type") {
-    typeConversion(Schema.INT64_SCHEMA, true, new Long(1),
-      Schema.INT64_SCHEMA, new Long(1))
+    typeConversion(Schema.INT64_SCHEMA, true, new java.lang.Long(1),
+      Schema.INT64_SCHEMA, new java.lang.Long(1))
   }
 
   test("double type") {
-    typeConversion(Schema.FLOAT64_SCHEMA, true, new Double(1.0),
-      Schema.FLOAT64_SCHEMA, new Double(1.0))
+    typeConversion(Schema.FLOAT64_SCHEMA, true, new java.lang.Double(1.0),
+      Schema.FLOAT64_SCHEMA, new java.lang.Double(1.0))
   }
 
   test("string type") {
@@ -55,7 +54,7 @@ class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
     val stmt = connection.createStatement()
     stmt.execute("insert into \"TEST\".\"EMPLOYEES_SOURCE\" values(" + sqlValue.toString + ")")
     val records = task.poll()
-    validateRecords(records.toList, convertedSchema, convertedValue)
+    validateRecords(records.asScala.toList, convertedSchema, convertedValue)
     stmt.execute("drop table \"TEST\".\"EMPLOYEES_SOURCE\"")
   }
 
