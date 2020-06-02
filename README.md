@@ -23,56 +23,62 @@ and use the following command.
 mvn clean install -DskipTests
 ```
 
+which should produce the Kafka Connector jar file `kafka-connect-hana-n.n.jar` in the `target` folder, where `n.n` corresponds to the current version.
+
 **Include the Jdbc Jar**
 
 #####   For SAP Hana
 
 - Follow the steps in [http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm](http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm) guide to access the SAP HANA Jdbc jar.
-- Place it in the same directory as the `Kafka Connector` jar or under the `CLASSPATH` directory.
+- Place it in the same directory as the Kafka Connector jar or under the `CLASSPATH` directory.
 
 ## QuickStart
 
+This instruction assumes Kafka installation is locally available so that you can start Kafka Connect as a standalone instance using its `bin/connect-standalone` command. 
+
 For getting started with this connector, the following steps need to be completed.
 
-- Create the config file for sink named `kafka-connect-sink.properties`.
+- Assume there is a table in Hana suitable for this sample. In the following, it is assumed that there is a table named "TEST"."PERSONS1" with the following SQL schema `(PersonID int primary key, LastName varchar(255), FirstName varchar(255))`.
+```
+
+- Create the config file for source named [`connect-hana-test-source-1.properties`](config/connect-hana-test-source-1.properties) and placed it in folder `config`.
 
 ```
-name=test-sink
+name=test-topic-1-source
+connector.class=com.sap.kafka.connect.source.hana.HANASourceConnector
+tasks.max=1
+topics=test_topic_1
+connection.url=jdbc:sap://<url>/
+connection.user=<username>
+connection.password=<password>
+test_topic_1.table.name="TEST"."PERSONS1"
+```
+The above configuration says this source connector should read records from Hana table `TEST.PERSONS1` and send them to Kafka topic `test_topic_1`.
+
+- Create the config file for sink named [`connect-hana-test-sink-1.properties`](config/connect-hana-test-sink-1.properties) and place it in folder `config`.
+
+```
+name=test_topic_1_sink
 connector.class=com.sap.kafka.connect.sink.hana.HANASinkConnector
 tasks.max=1
-topics=test_topic
+topics=test_topic_1
 connection.url=jdbc:sap://<url>/
 connection.user=<username>
 connection.password=<password>
 auto.create=true
-schema.registry.url=<schema registry url>
-test_topic.table.name="SYSTEM"."DUMMY_TABLE"
+test_topic_1.table.name="TEST"."PERSONS1_RES"
 ```
 
-- Start the kafka-connect sink connector using the following command.
+The above configuration says this sink connector should read messages from Kafka topic `test_topic_1` and insert to Hana table `TEST.PERSONS1_RES`.
+
+- Start the above kafka-connect source and sink connectors using the standalone connector properties [`connect-standalone.properties`](config/connect-standalone.properties) with the following command.
 
 ```
-./bin/connect-standalone ./etc/schema-registry/connect-avro-standalone.properties ./etc/kafka/kafka-connect-sink.properties
+./bin/connect-standalone config/connect-standalone.properties config/connect-hana-test-source-1.properties config/connect-hana-test-sink-1.properties
 ```
 
-- Create the config file for source named `kafka-connect-source.properties`.
+The above scenario is the simplest scenario of transferring records between Hana and Kafka. For more complex sample scenarios, refer to Examples#example.
 
-```
-name=kafka-connect-source
-connector.class=com.sap.kafka.connect.source.hana.HANASourceConnector
-tasks.max=1
-topics=kafka_source_1,kafka_source_2
-connection.url=jdbc:sap://<url>/
-connection.user=<username>
-connection.password=<password>
-kafka_source_1.table.name="SYSTEM"."com.sap.test::hello"
-```
-
-- - Start the kafka-connect source connector using the following command.
-
-```
-./bin/connect-standalone ./etc/schema-registry/connect-avro-standalone.properties ./etc/kafka/kafka-connect-source.properties
-```
 
 #### Distributed Mode
 
@@ -127,14 +133,22 @@ of the column can be `Int, Float, Decimal, Timestamp`. This considers SAP DB Tim
   * `{topic}.partition.count` - This setting can be used to specify the no. of topic partitions that the Source connector can use to publish the data. Should be an `Integer`. Default value is `1`.
 
 
-#### Default Configurations
+#### Sample Configurations
+(TODO this should be cosolidated with those in the samples)
+- [Sample Source Connector Config](config/connect-hana-source.properties)
+- [Sample Sink Connector Config](config/connect-hana-sink.properties)
+- [PERSONS1 batch-mod Source Connector Config](config/connect-hana-source-1.properties)
+- [PERSONS1 Sink Connector Config](config/connect-hana-sink-1.properties)
+- [PERSONS2 incrementing-mod Source Connector Config](config/connect-hana-source-2.properties)
+- [PERSONS2 Sink Connector Config](config/connect-hana-sink-2.properties)
+- [Standard connector Json Config](config/connect-standard.properties)
+- [Standard connector Avro Config with Confluent Schemas Registry](config/connect-avro-confluent.properties)
+- [Standard connector Avro Config with Apicurio Schemas Registry](config/connect-avro-apicurio.properties)
 
-- [Sink Connector Config](config/kafka-connect-hana-sink.properties)
-- [Source Connector Config](config/kafka-connect-hana-source.properties)
 
 ## Examples
 
-The `unit tests` provide examples on every possible mode in which the connector can be configured.
+Folder `examples` includes some example scenarios. In addtion, the `unit tests` provide examples on every possible mode in which the connector can be configured.
 
 ## How to obtain support
 
