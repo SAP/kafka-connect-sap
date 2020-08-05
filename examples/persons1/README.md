@@ -27,7 +27,7 @@ $ ...
 
 For more information regarding how to start Kafka, refer to https://kafka.apache.org/quickstart.
 
-##### Step 2: Install the jar files
+##### Step 2: Install the jar files for kafka-connect-hana
 
 We install the jar files into a dedicated directory within the plugins directory `plugins` that we create at `$KAFKA_HOME`.
 
@@ -158,12 +158,14 @@ The default configuration uses a JSON message that includes both the schema and 
 We can look into the target table using SQL.
 
 ```
-SELECT * FROM Person1_Res;
-1	simpson	homer
-2	simpson	merge
-3	simpson	bart
-4	simpson	lisa
-5	simpson	maggie
+SELECT * FROM Persons4_Res;
+PERSONID  LASTNAME  FIRSTNAME
+--------  --------  ---------
+       1  simpson   homer    
+       2  simpson   merge    
+       3  simpson   bart     
+       4  simpson   lisa     
+       5  simpson   maggie
 ...
 ```
 

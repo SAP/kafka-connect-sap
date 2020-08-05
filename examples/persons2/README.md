@@ -15,7 +15,10 @@ This description assumes Kafka 2.4.1 is installed on local machine and environme
 
 ##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../persons1).
 
-##### Step 3: Prepare the connector configuration files
+- start Kafka
+- install kafka-connect-hana
+
+o##### Step 3: Prepare the connector configuration files
 
 We use the provided configuration files and customize some properties. First, copy the source connector configuration file to the target `config` directory.
 
@@ -109,12 +112,14 @@ The default configuration uses a JSON message that includes both the schema and 
 We can look into the target table as well.
 
 ```
-SELECT * FROM Person2_Res;
-1	simpson	homer
-2	simpson	merge
-3	simpson	bart
-4	simpson	lisa
-5	simpson	maggie
+SELECT * FROM Persons2_Res;
+PERSONID  LASTNAME  FIRSTNAME
+--------  --------  ---------
+       1  simpson   homer    
+       2  simpson   merge    
+       3  simpson   bart     
+       4  simpson   lisa     
+       5  simpson   maggie
 ```
 
 We insert additional records to the source table.
@@ -140,16 +145,18 @@ $ bin/kafka-console-consumer.sh --bootstrap-server  localhost:9092 --topic test_
 We should also find these new records in the target table.
 
 ```
-SELECT * FROM Person2_Res;
-1	simpson	homer
-2	simpson	merge
-3	simpson	bart
-4	simpson	lisa
-5	simpson	maggie
-11	flanders	ned
-12	flanders	edna
-13	flanders	rod
-14	flanders	todd
+SELECT * FROM Persons2_Res;
+PERSONID  LASTNAME  FIRSTNAME
+--------  --------  ---------
+       1  simpson   homer    
+       2  simpson   marge    
+       3  simpson   bart     
+       4  simpson   lisa     
+       5  simpson   maggie   
+      11  flanders  ned      
+      12  flanders  edna     
+      13  flanders  rod      
+      14  flanders  todd     
 ```
 
 It is noted that this scenario uses the incremental mode. As a result, only the records will be read periodically from the source table and inserted into the sink table. 
