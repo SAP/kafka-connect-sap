@@ -38,10 +38,10 @@ This instruction assumes Kafka installation is locally available so that you can
 
 For getting started with this connector, the following steps need to be completed.
 
-- Assume there is a table in Hana suitable for this sample. In the following, it is assumed that there is a table named "TEST"."PERSONS1" with the following SQL schema `(PersonID int primary key, LastName varchar(255), FirstName varchar(255))`.
-```
+- Assume there is a table in Hana suitable for this sample. In the following, it is assumed that there is a table named `PERSONS1` with the following SQL schema `(PersonID int primary key, LastName varchar(255), FirstName varchar(255))`.
 
-- Create the config file for source named [`connect-hana-test-source-1.properties`](config/connect-hana-test-source-1.properties) and placed it in folder `config`.
+- Create the config file for source named [`connect-hana-source-1.properties`](config/connect-hana-source-1.properties) and placed it in folder `config`.
+
 
 ```
 name=test-topic-1-source
@@ -51,11 +51,13 @@ topics=test_topic_1
 connection.url=jdbc:sap://<url>/
 connection.user=<username>
 connection.password=<password>
-test_topic_1.table.name="TEST"."PERSONS1"
+test_topic_1.table.name=<schemaname>."PERSONS1"
 ```
-The above configuration says this source connector should read records from Hana table `TEST.PERSONS1` and send them to Kafka topic `test_topic_1`.
 
-- Create the config file for sink named [`connect-hana-test-sink-1.properties`](config/connect-hana-test-sink-1.properties) and place it in folder `config`.
+The above configuration says this source connector should read records from Hana table `PERSONS1` and send them to Kafka topic `test_topic_1`.
+
+- Create the config file for sink named [`connect-hana-sink-1.properties`](config/connect-hana-sink-1.properties) and place it in folder `config`.
+
 
 ```
 name=test_topic_1_sink
@@ -66,18 +68,19 @@ connection.url=jdbc:sap://<url>/
 connection.user=<username>
 connection.password=<password>
 auto.create=true
-test_topic_1.table.name="TEST"."PERSONS1_RES"
+test_topic_1.table.name=<schemaname>."PERSONS1_RES"
 ```
 
-The above configuration says this sink connector should read messages from Kafka topic `test_topic_1` and insert to Hana table `TEST.PERSONS1_RES`.
+The above configuration says this sink connector should read messages from Kafka topic `test_topic_1` and insert to Hana table `PERSONS1_RES`.
 
 - Start the above kafka-connect source and sink connectors using the standalone connector properties [`connect-standalone.properties`](config/connect-standalone.properties) with the following command.
+
 
 ```
 ./bin/connect-standalone config/connect-standalone.properties config/connect-hana-test-source-1.properties config/connect-hana-test-sink-1.properties
 ```
 
-The above scenario is the simplest scenario of transferring records between Hana and Kafka. For more complex sample scenarios, refer to Examples#example.
+The above scenario is the simplest scenario of transferring records between Hana and Kafka. For the detail of this scenario and other more complex scenarios, refer to Examples#example.
 
 
 #### Distributed Mode
@@ -113,7 +116,7 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
 
   * `{topic}.table.partition.count` - This is a SapDB Sink specific configuration setting which determines the number of partitions the table should have. Required when `auto.create` is set to `true` and table specified in `{topic}.table.name` does not exist in SAP DBs. Should be an `Integer`. Default value is `0`.
 
-- Source
+* Source
 
   * `topics` - This setting can be used to specify `a comma-separated list of topics`. Must not have spaces.
 
@@ -134,21 +137,19 @@ of the column can be `Int, Float, Decimal, Timestamp`. This considers SAP DB Tim
 
 
 #### Sample Configurations
-(TODO this should be cosolidated with those in the samples)
-- [Sample Source Connector Config](config/connect-hana-source.properties)
-- [Sample Sink Connector Config](config/connect-hana-sink.properties)
-- [PERSONS1 batch-mod Source Connector Config](config/connect-hana-source-1.properties)
-- [PERSONS1 Sink Connector Config](config/connect-hana-sink-1.properties)
-- [PERSONS2 incrementing-mod Source Connector Config](config/connect-hana-source-2.properties)
-- [PERSONS2 Sink Connector Config](config/connect-hana-sink-2.properties)
-- [Standard connector Json Config](config/connect-standard.properties)
-- [Standard connector Avro Config with Confluent Schemas Registry](config/connect-avro-confluent.properties)
-- [Standard connector Avro Config with Apicurio Schemas Registry](config/connect-avro-apicurio.properties)
+- Source and Sink Properties
+  - Sample Connectors: [connect-hana-source.properties](config/connect-hana-source.properties),[connect-hana-sink.properties](config/connect-hana-sink.properties)
+  - PERSONS1 batch-mode Connetors: [connect-hana-source-1.properties](config/connect-hana-source-1.properties),[connect-hana-sink-1.properties](config/connect-hana-sink-1.properties)
+  - PERSONS2 incrementing-mode Connectors: [connect-hana-source-2.properties](config/connect-hana-source-2.properties),[connect-hana-sink-2.properties](config/connect-hana-sink-2.properties)
+- Connector Properties
+  - Standalone Connector with JSON: [connect-standalone.properties](config/connect-standalone.properties)
+  - Standalone Connector with Avro using Confluent Schemas Registry: [connect-avro-confluent.properties](config/connect-avro-confluent.properties)
+  - Standalone Connector with Avro using Apicurio Schemas Registry: [connect-avro-apicurio.properties](config/connect-avro-apicurio.properties)
 
 
 ## Examples
 
-Folder `examples` includes some example scenarios. In addtion, the `unit tests` provide examples on every possible mode in which the connector can be configured.
+Folder [`examples`](examples) includes some example scenarios. In addtion, the `unit tests` provide examples on every possible mode in which the connector can be configured.
 
 ## How to obtain support
 
@@ -167,6 +168,6 @@ Currently only SAP Hana is supported.
 
 
 ## License
-Copyright (c) 2017 SAP SE or an SAP affiliate company. All rights reserved.
+Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved.
 This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the [LICENSE file](LICENSE).
 
