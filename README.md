@@ -154,7 +154,7 @@ Folder [`examples`](examples) includes some example scenarios. In addtion, the `
 ## How to obtain support
 
 Raise Github issues to obtain support from project committers:
-Santosh Addanki (santosh.kumar.addanki@sap.com)
+Akitoshi Yoshida (akitoshi.yoshida@sap.com)
 Subhobrata Dey  (subhobrata.dey@sap.com)
 
 
