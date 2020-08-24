@@ -1,0 +1,14 @@
+{
+    "name": "test-topic-4-sink",
+    "config": {
+        "connector.class": "com.sap.kafka.connect.source.hana.HANASourceConnector",
+        "tasks.max": "1",
+        "topics": "test_topic_4",
+        "connection.url": "jdbc:sap://<host>/",
+        "connection.user": "<username>",
+        "connection.password": "<password>",
+        "auto.create": "true",
+        "test_topic_4.table.name": "\"<schemaname>\".\"PERSONS4_RES\""
+    }
+}
+

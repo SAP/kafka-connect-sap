@@ -42,21 +42,20 @@ In order to use Apicurio registry, its client libraries must be placed in the co
 Run the following command to download those jar files into the target directory.
 
 ```
-$ mkdir target && cat confluent-registry-jars.txt | xargs  -I '{}' mvn dependency:get -Dartifact='{}' -Dtransitive=false -DremoteRepositories=confluent::::https://packages.confluent.io/maven -Ddest=target
-[INFO] Scanning for projects...
-[INFO] 
-...
+$ make get_libs
+Getting jar files into target ...
+$ ls target
+avro-1.9.2.jar                          kafka-connect-avro-converter-5.4.2.jar
+common-config-5.4.2.jar                 kafka-connect-hana-1.0-SNAPSHOT.jar
+common-utils-5.4.2.jar                  kafka-schema-registry-client-5.4.2.jar
+kafka-avro-serializer-5.4.2.jar         ngdbc-2.5.49.jar
+$ 
 ```
 
 We copy the downloaded jar files into the connector's plugin directory.
 
 ```
-$ ls target
-avro-1.9.2.jar                          kafka-avro-serializer-5.4.2.jar
-common-config-5.4.2.jar                 kafka-connect-avro-converter-5.4.2.jar
-common-utils-5.4.2.jar                  kafka-schema-registry-client-5.4.2.jar
-$ 
-$ cp *.jar $KAFKA_HOME/plugins/kafka-connect-hana
+$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connect-hana
 $
 $ cd $KAFKA_HOME
 $ ls plugins/kafka-connect-hana

@@ -6,7 +6,6 @@ This example is similar to example [persons2](../persons2) but example persons3 
 
 - This project is built (or its jar file is available)
 - Local Kafka installation
-- Access to Apicurio schema registry
 - Access to HANA
 - Understanding of example [persons2](../persons2)
 
@@ -81,35 +80,34 @@ $
 
 ###### Add Apicurio registry client libraries to the plugin directory
 
-In order to use Apicurio registry, its client libraries must be placed in the connector's plugin directory. The required jar files are listed in the [apicurio-registry-jars.txt](./apicurio-registry-jars.txt) file.
+In order to use Apicurio registry, its client libraries must be placed in the connector's plugin directory. The required jar files are downloaded by running the following command.
 
-Run the following command to download those jar files into the target directory.
 
 ```
-$ mkdir target && cat apicurio-registry-jars.txt | xargs  -I '{}' mvn dependency:get -Dartifact='{}' -Dtransitive=false -Ddest=target
-[INFO] Scanning for projects...
-[INFO] 
-...
+$ make get_libs
+Getting jar files into target ...
+$
+$ ls target
+apicurio-registry-client-1.2.3.Final.jar           jersey-common-2.29.1.jar
+apicurio-registry-common-1.2.3.Final.jar           jersey-hk2-2.29.1.jar
+apicurio-registry-utils-converter-1.2.3.Final.jar  jersey-media-jaxb-2.29.1.jar
+apicurio-registry-utils-serde-1.2.3.Final.jar      jersey-media-json-binding-2.29.1.jar
+avro-1.9.2.jar                                     jersey-mp-config-2.29.1.jar
+cdi-api-2.0.jar                                    jersey-mp-rest-client-2.29.1.jar
+geronimo-config-impl-1.2.2.jar                     jersey-server-2.29.1.jar
+jakarta.json-1.1.5.jar                             kafka-connect-hana-1.0-SNAPSHOT.jar
+jakarta.json-api-1.1.5.jar                         microprofile-config-api-1.4.jar
+jakarta.json.bind-api-1.0.2.jar                    microprofile-rest-client-api-1.4.0.jar
+javax.interceptor-api-1.2.jar                      ngdbc-2.5.49.jar
+jersey-cdi1x-2.29.1.jar                            yasson-1.0.3.jar
+jersey-client-2.29.1.jar
+$ 
 ```
 
 We copy the downloaded jar files into the connector's plugin directory.
 
 ```
-$ ls target
-apicurio-registry-client-1.2.3.Final.jar           jersey-client-2.29.1.jar
-apicurio-registry-common-1.2.3.Final.jar           jersey-common-2.29.1.jar
-apicurio-registry-utils-converter-1.2.3.Final.jar  jersey-hk2-2.29.1.jar
-apicurio-registry-utils-serde-1.2.3.Final.jar      jersey-media-jaxb-2.29.1.jar
-avro-1.9.2.jar                                     jersey-media-json-binding-2.29.1.jar
-cdi-api-2.0.jar                                    jersey-mp-config-2.29.1.jar
-geronimo-config-impl-1.2.2.jar                     jersey-mp-rest-client-2.29.1.jar
-jakarta.json-1.1.5.jar                             jersey-server-2.29.1.jar
-jakarta.json-api-1.1.5.jar                         microprofile-config-api-1.4.jar
-jakarta.json.bind-api-1.0.2.jar                    microprofile-rest-client-api-1.4.0.jar
-javax.interceptor-api-1.2.jar                      yasson-1.0.3.jar
-jersey-cdi1x-2.29.1.jar
-$
-$ cp *.jar $KAFKA_HOME/plugins/kafka-connect-hana
+$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connect-hana
 $
 ```
 
