@@ -153,10 +153,7 @@ Folder [`examples`](examples) includes some example scenarios. In addtion, the `
 
 ## How to obtain support
 
-Raise Github issues to obtain support from project committers:
-Akitoshi Yoshida (akitoshi.yoshida@sap.com)
-Subhobrata Dey  (subhobrata.dey@sap.com)
-
+We welcome comments, questions, and bug reports. Please [create an issue](https://github.com/SAP/kafka-connect-sap/issues) to obtain support.
 
 ## Contributing
 
