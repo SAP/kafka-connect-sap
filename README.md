@@ -136,17 +136,6 @@ of the column can be `Int, Float, Decimal, Timestamp`. This considers SAP DB Tim
   * `{topic}.partition.count` - This setting can be used to specify the no. of topic partitions that the Source connector can use to publish the data. Should be an `Integer`. Default value is `1`.
 
 
-#### Sample Configurations
-- Source and Sink Properties
-  - Sample Connectors: [connect-hana-source.properties](config/connect-hana-source.properties),[connect-hana-sink.properties](config/connect-hana-sink.properties)
-  - PERSONS1 batch-mode Connetors: [connect-hana-source-1.properties](config/connect-hana-source-1.properties),[connect-hana-sink-1.properties](config/connect-hana-sink-1.properties)
-  - PERSONS2 incrementing-mode Connectors: [connect-hana-source-2.properties](config/connect-hana-source-2.properties),[connect-hana-sink-2.properties](config/connect-hana-sink-2.properties)
-- Connector Properties
-  - Standalone Connector with JSON: [connect-standalone.properties](config/connect-standalone.properties)
-  - Standalone Connector with Avro using Confluent Schemas Registry: [connect-avro-confluent.properties](config/connect-avro-confluent.properties)
-  - Standalone Connector with Avro using Apicurio Schemas Registry: [connect-avro-apicurio.properties](config/connect-avro-apicurio.properties)
-
-
 ## Examples
 
 Folder [`examples`](examples) includes some example scenarios. In addtion, the `unit tests` provide examples on every possible mode in which the connector can be configured.
@@ -157,7 +146,7 @@ We welcome comments, questions, and bug reports. Please [create an issue](https:
 
 ## Contributing
 
-Contributions are accepted by sending Pull Requests to this repo.
+Contributions are accepted by sending Pull Requests to this repo. Please do not forget to sign the [Contribution License Agreement](https://cla-assistant.io/SAP/kafka-connect-sap).
 
 ## Todos
 

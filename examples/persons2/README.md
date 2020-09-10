@@ -18,7 +18,7 @@ This description assumes Kafka 2.4.1 is installed on local machine and environme
 - start Kafka
 - install kafka-connect-hana
 
-o##### Step 3: Prepare the connector configuration files
+##### Step 3: Prepare the connector configuration files
 
 We use the provided configuration files and customize some properties. First, copy the source connector configuration file to the target `config` directory.
 

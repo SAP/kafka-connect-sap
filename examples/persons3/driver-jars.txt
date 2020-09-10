@@ -1,3 +1,4 @@
+com.sap.cloud.db.jdbc:ngdbc:2.5.49
 io.apicurio:apicurio-registry-client:1.2.3.Final
 io.apicurio:apicurio-registry-common:1.2.3.Final
 io.apicurio:apicurio-registry-utils-converter:1.2.3.Final

@@ -31,30 +31,25 @@ For more information regarding how to start Kafka, refer to https://kafka.apache
 
 We install the jar files into a dedicated directory within the plugins directory `plugins` that we create at `$KAFKA_HOME`.
 
-First, we create a plugins directory `$KAFKA_HOME/plugins` if not yet created and create directory `kafka-connect-hana` within this directory. Assuming this project has been built (see Building), copy the connector's jar file into this directory.
-
+First, we create a plugins directory `$KAFKA_HOME/plugins` if not yet created and create directory `kafka-connect-hana` within this directory. 
 ```
 $ mkdir -p $KAFKA_HOME/plugins/kafka-connect-hana
-$ cp $KAFKA_CONNECT_SAP/target/kafka-connect-hana-1.0-SNAPSHOT.jar $KAFKA_HOME/plugins/kafka-connect-hana
 $
 ```
 
-Download the the HANA jdbc driver and put it into the target `$KAFKA_HOME/plugins/kafka-connect-hana` directory.
+Assuming this project has been built (see Building), run `make get_libs` to place the required jar files including the HANA jdbc driver into directory 'target'.
 
 ```
-$ wget https://repo1.maven.org/maven2/com/sap/cloud/db/jdbc/ngdbc/2.5.49/ngdbc-2.5.49.jar
---2020-07-24 20:14:06--  https://repo1.maven.org/maven2/com/sap/cloud/db/jdbc/ngdbc/2.5.49/ngdbc-2.5.49.jar
-Resolving repo1.maven.org (repo1.maven.org)... 151.101.112.209
-Connecting to repo1.maven.org (repo1.maven.org)|151.101.112.209|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 1219123 (1.2M) [application/java-archive]
-Saving to: 'ngdbc-2.5.49.jar'
+$ make get_libs
+Getting jar files into target ...
+$ ls target
+kafka-connect-hana-1.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
+$
+```
+Copy those jar files into `$KAFKA_HOME/plugins/kafka-connect-hana` directory.
 
-ngdbc-2.5.49.jar             100%[===========================================>]   1.16M  5.23MB/s    in 0.2s
-
-2020-07-24 20:14:06 (5.23 MB/s) - 'ngdbc-2.5.49.jar' saved [1219123/1219123]
-
-$ mv ngdbc-2.5.49.jar $KAFKA_HOME/plugins/kafka-connect-hana
+```
+$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connect-hana
 $
 ```
 

@@ -6,7 +6,6 @@ This example is similar to example [persons3(../persons3) but example persons4 u
 
 - This project is built (or its jar file is available)
 - Local Kafka installation
-- Access to Apicurio schema registry
 - Access to HANA
 - Understanding of example [persons2](../persons2)
 
