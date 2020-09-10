@@ -29,8 +29,8 @@ which should produce the Kafka Connector jar file `kafka-connect-hana-n.n.jar` i
 
 #####   For SAP Hana
 
-- Follow the steps in [http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm](http://help.sap.com/saphelp_hanaplatform/helpdata/en/ff/15928cf5594d78b841fbbe649f04b4/frameset.htm) guide to access the SAP HANA Jdbc jar.
-- Place it in the same directory as the Kafka Connector jar or under the `CLASSPATH` directory.
+- Follow the steps in [SAP HANA Client Interface Programming Reference](https://help.sap.com/viewer/f1b440ded6144a54ada97ff95dac7adf/LATEST/en-US/434e2962074540e18c802fd478de86d6.html) guide to access the SAP HANA Jdbc jar.
+- The maven coordinate of the driver is `com.sap.cloud.db.jdbc:ngdbc:x.x.x` and the drivers are available at the central maven repository [https://search.maven.org/artifact/com.sap.cloud.db.jdbc/ngdbc](https://search.maven.org/artifact/com.sap.cloud.db.jdbc/ngdbc).
 
 ## QuickStart
 
