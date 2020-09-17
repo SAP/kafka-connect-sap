@@ -62,7 +62,7 @@ trait GenericSchemaBuilder {
         s"""DECIMAL(10, ${parameters(Decimal.SCALE_FIELD)})"""
       case Time.LOGICAL_NAME => "TIME"
       case Timestamp.LOGICAL_NAME => "TIMESTAMP"
-      case _ => throw new ConnectorException("Field Schema type is invalid")
+      case _ => throw new ConnectorException(s"Field Schema type name $logicalType is invalid")
     }
   }
 }
