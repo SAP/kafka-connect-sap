@@ -1,6 +1,7 @@
 package com.sap.kafka.client.hana
 
 import java.sql.{Connection, DriverManager, ResultSet}
+import java.util.{Calendar, TimeZone}
 
 import com.sap.kafka.client.{ColumnRow, MetaSchema, hana, metaAttr}
 import com.sap.kafka.connect.config.hana.HANAConfig
@@ -19,6 +20,8 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
   protected val driver: String = "com.sap.db.jdbc.Driver"
 
   private val CONNECTION_FAIL_R = ".*Failed to open connection.*".r
+
+  private val calendarUTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
   /**
    * Checks whether the provided exception is a connection opening failure one.
@@ -475,9 +478,9 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
 
       case java.sql.Types.DOUBLE => resultSet.getDouble(index)
 
-      case java.sql.Types.DATE => resultSet.getDate(index)
-      case java.sql.Types.TIME => resultSet.getTime(index)
-      case java.sql.Types.TIMESTAMP => resultSet.getTimestamp(index)
+      case java.sql.Types.DATE => resultSet.getDate(index, calendarUTC)
+      case java.sql.Types.TIME => resultSet.getTime(index, calendarUTC)
+      case java.sql.Types.TIMESTAMP => resultSet.getTimestamp(index, calendarUTC)
 
       case java.sql.Types.NCLOB | java.sql.Types.CLOB => resultSet.getString(index)
 

@@ -2,7 +2,8 @@ package com.sap.kafka.connect.sink
 
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
-import java.util
+import java.{sql, util}
+import java.util.TimeZone
 
 import com.sap.kafka.connect.MockJdbcClient
 import com.sap.kafka.connect.config.hana.HANAParameters
@@ -112,7 +113,6 @@ class AvroLogicalTypesTest extends FunSuite {
     val expectedTimeField = "02:02:02"
     val date = simpleDateFormat.parse(expectedDateField)
 
-
     val struct = new Struct(schema).put("time_field", date)
 
     task.put(util.Collections.singleton(
@@ -124,8 +124,9 @@ class AvroLogicalTypesTest extends FunSuite {
     val structs = rs.get
     assert(structs.size === 1)
     val head = structs.head
-
-    val actualDateField = head.get("time_field").toString
+    val simpleTimeFormat = new SimpleDateFormat("hh:mm:ss")
+    simpleTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+    val actualDateField = simpleTimeFormat.format(head.get("time_field"))
     assert(expectedTimeField === actualDateField)
   }
 
@@ -166,10 +167,8 @@ class AvroLogicalTypesTest extends FunSuite {
     // }
     val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'")
     val expectedDateField = "2013-10-16T02:02:02.002Z"
-    val expectedTimestampField = "2013-10-16 02:02:02.0"
+    val expectedTimestampField = "2013-10-16 02:02:02.002"
     val date = simpleDateFormat.parse(expectedDateField)
-
-
     val struct = new Struct(schema).put("timestamp_field", date)
 
     task.put(util.Collections.singleton(
@@ -182,7 +181,9 @@ class AvroLogicalTypesTest extends FunSuite {
     assert(structs.size === 1)
     val head = structs.head
 
-    val actualDateField = head.get("timestamp_field").toString
+    val simpleTimestampFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
+    simpleTimestampFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+    val actualDateField = simpleTimestampFormat.format(head.get("timestamp_field"))
     assert(expectedTimestampField === actualDateField)
   }
 

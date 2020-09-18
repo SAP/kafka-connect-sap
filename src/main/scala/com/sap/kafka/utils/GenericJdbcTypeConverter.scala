@@ -82,42 +82,22 @@ trait GenericJdbcTypeConverter {
       stmt.setBytes(i + 1, value.asInstanceOf[Array[Byte]])
     case java.sql.Types.DATE => (value: Any) => stmt.setDate(i + 1, convertToJdbcDateTypeFromAvroDateType(value))
     case java.sql.Types.TIME => (value: Any) => stmt.setTime(i + 1, convertToJdbcTimeTypeFromAvroTimeType(value))
-    case java.sql.Types.TIMESTAMP => (value: Any) => stmt.setTimestamp(i + 1, convertToJdbcTypeFromAvroTimestampType(value))
+    case java.sql.Types.TIMESTAMP => (value: Any) => stmt.setTimestamp(i + 1, convertToJdbcTimesampTypeFromAvroTimestampType(value))
     case other =>
       (value: Any) =>
         sys.error(s"Unable to translate the non-null value for the field $i")
   }})
 
   private def convertToJdbcDateTypeFromAvroDateType(value: Any): java.sql.Date = {
-    val avroDateParser = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy")
-
-    new java.sql.Date(avroDateParser.parse(value.toString).getTime)
+    new java.sql.Date(value.asInstanceOf[java.util.Date].getTime)
   }
 
   private def convertToJdbcTimeTypeFromAvroTimeType(value: Any): java.sql.Time = {
-    try {
-      val avroTimeParser = new SimpleDateFormat("E MMM dd HH:mm:ss.SSS Z yyyy")
-
-      new java.sql.Time(avroTimeParser.parse(value.toString).getTime)
-    } catch {
-      case e: Exception =>
-        val avroTimeParser = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy")
-
-        new java.sql.Time(avroTimeParser.parse(value.toString).getTime)
-    }
+    new java.sql.Time(value.asInstanceOf[java.util.Date].getTime)
   }
 
-  private def convertToJdbcTypeFromAvroTimestampType(value: Any): java.sql.Timestamp = {
-    try {
-      val avroTimestampParser = new SimpleDateFormat("E MMM dd HH:mm:ss.SSS Z yyyy")
-
-      new java.sql.Timestamp(avroTimestampParser.parse(value.toString).getTime)
-    } catch {
-      case e: Exception =>
-        val avroTimestampParser = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy")
-
-        new java.sql.Timestamp(avroTimestampParser.parse(value.toString).getTime)
-    }
+  private def convertToJdbcTimesampTypeFromAvroTimestampType(value: Any): java.sql.Timestamp = {
+    new java.sql.Timestamp(value.asInstanceOf[java.util.Date].getTime)
   }
 
   /**
