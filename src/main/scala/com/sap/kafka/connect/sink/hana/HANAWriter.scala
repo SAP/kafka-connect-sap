@@ -22,15 +22,12 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
   private var connection:Connection = null
 
   override def initializeConnection(): Unit = {
+    if (connection != null && !connection.isValid(120)) {
+      connection.close()
+    }
     if(connection == null || connection.isClosed ) {
       connection = hanaClient.getConnection
     }
-    else if(!connection.isValid(120))
-    {
-      connection.close()
-      connection = hanaClient.getConnection
-    }
-    connection.setAutoCommit(false)
   }
 
 

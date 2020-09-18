@@ -50,17 +50,32 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
   override def afterAll(): Unit = {
     var connection = jdbcClient.getConnection
-    var statement = connection.createStatement()
-    statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_BULK_LOAD)
+    try {
+      connection.setAutoCommit(true)
+      val statement = connection.createStatement()
+      statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_BULK_LOAD)
+    } finally {
+      connection.close()
+    }
 
     connection = multiTableJdbcClient.getConnection
-    statement = connection.createStatement()
-    statement.execute("drop table " + FIRST_TABLE_NAME_FOR_MULTI_LOAD)
-    statement.execute("drop table " + SECOND_TABLE_NAME_FOR_MULTI_LOAD)
+    try {
+      connection.setAutoCommit(true)
+      val statement = connection.createStatement()
+      statement.execute("drop table " + FIRST_TABLE_NAME_FOR_MULTI_LOAD)
+      statement.execute("drop table " + SECOND_TABLE_NAME_FOR_MULTI_LOAD)
+    } finally {
+      connection.close()
+    }
 
     connection = incrLoadJdbcClient.getConnection
-    statement = connection.createStatement()
-    statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_LOAD)
+    try {
+      connection.setAutoCommit(true)
+      val statement = connection.createStatement()
+      statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_LOAD)
+    } finally {
+      connection.close()
+    }
     super.afterAll()
   }
 
@@ -75,123 +90,138 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
   test("bulk periodic load") {
     val connection = jdbcClient.getConnection
-    val stmt = connection.createStatement()
-    stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_BULK_LOAD + " values(1)")
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_BULK_LOAD + " values(1)")
 
-    val expectedSchema = SchemaBuilder.struct().name("expected schema")
-                    .field("id", Schema.INT32_SCHEMA)
-    task.start(singleTableConfig())
-    var expectedData = new Struct(expectedSchema)
-                        .put("id", 1)
+      val expectedSchema = SchemaBuilder.struct().name("expected schema")
+        .field("id", Schema.INT32_SCHEMA)
+      task.start(singleTableConfig())
+      var expectedData = new Struct(expectedSchema)
+        .put("id", 1)
 
-    var records = task.poll()
-    assert(records.size() === 1)
+      var records = task.poll()
+      assert(records.size() === 1)
 
-    records.toList.foreach(record => {
-      compareSchema(expectedSchema, record.valueSchema())
-      assert(record.value().isInstanceOf[Struct])
-      compareData(expectedData, record.value().asInstanceOf[Struct],
-        expectedSchema)
-    })
+      records.toList.foreach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+      })
 
-    stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_BULK_LOAD + "values(2)")
-    records = task.poll()
-    //because this reads everything
-    assert(records.size() === 2)
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_BULK_LOAD + "values(2)")
+      records = task.poll()
+      //because this reads everything
+      assert(records.size() === 2)
 
-    var count = 1
-    records.toList.foreach(record => {
-      compareSchema(expectedSchema, record.valueSchema())
-      assert(record.value().isInstanceOf[Struct])
-      expectedData = new Struct(expectedSchema)
-        .put("id", count)
-      compareData(expectedData, record.value().asInstanceOf[Struct],
-        expectedSchema)
-      count = count + 1
-    })
+      var count = 1
+      records.toList.foreach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
+        expectedData = new Struct(expectedSchema)
+          .put("id", count)
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+        count = count + 1
+      })
+    } finally {
+      connection.close()
+    }
   }
 
   test("bulk periodic load on multiple tables") {
     val connection = multiTableJdbcClient.getConnection
-    val stmt = connection.createStatement()
-    stmt.execute("insert into " + FIRST_TABLE_NAME_FOR_MULTI_LOAD + "values(1)")
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      stmt.execute("insert into " + FIRST_TABLE_NAME_FOR_MULTI_LOAD + "values(1)")
 
-    val expectedSchemaForSingleTable = SchemaBuilder.struct()
-      .name("expected schema for single table")
-      .field("id", Schema.INT32_SCHEMA)
+      val expectedSchemaForSingleTable = SchemaBuilder.struct()
+        .name("expected schema for single table")
+        .field("id", Schema.INT32_SCHEMA)
 
-    stmt.execute("insert into " + SECOND_TABLE_NAME_FOR_MULTI_LOAD + "values(2)")
+      stmt.execute("insert into " + SECOND_TABLE_NAME_FOR_MULTI_LOAD + "values(2)")
 
-    val expectedSchemaForSecondTable = SchemaBuilder.struct()
-      .name("expected schema for second table")
-      .field("id", Schema.INT32_SCHEMA)
+      val expectedSchemaForSecondTable = SchemaBuilder.struct()
+        .name("expected schema for second table")
+        .field("id", Schema.INT32_SCHEMA)
 
-    multiTableLoadTask.start(multiTableConfig())
+      multiTableLoadTask.start(multiTableConfig())
 
-    val expectedDataForFirstTable = new Struct(expectedSchemaForSingleTable)
-                                      .put("id", 1)
+      val expectedDataForFirstTable = new Struct(expectedSchemaForSingleTable)
+        .put("id", 1)
 
-    val expectedDataForSecondTable = new Struct(expectedSchemaForSecondTable)
-                                        .put("id", 2)
+      val expectedDataForSecondTable = new Struct(expectedSchemaForSecondTable)
+        .put("id", 2)
 
-    val records = multiTableLoadTask.poll()
+      val records = multiTableLoadTask.poll()
 
-    assert(records.size() === 1)
+      assert(records.size() === 1)
 
-    records.foreach(record => {
-      if (record.topic() == TOPIC) {
-        compareSchema(expectedSchemaForSingleTable, record.valueSchema())
-        assert(record.value().isInstanceOf[Struct])
-        compareData(expectedDataForFirstTable, record.value().asInstanceOf[Struct],
-          expectedSchemaForSingleTable)
-      } else if (record.topic() == SECOND_TOPIC) {
-        compareSchema(expectedSchemaForSecondTable, record.valueSchema())
-        assert(record.value().isInstanceOf[Struct])
-        compareData(expectedDataForSecondTable, record.value().asInstanceOf[Struct],
-          expectedSchemaForSecondTable)
-      }
-    })
+      records.foreach(record => {
+        if (record.topic() == TOPIC) {
+          compareSchema(expectedSchemaForSingleTable, record.valueSchema())
+          assert(record.value().isInstanceOf[Struct])
+          compareData(expectedDataForFirstTable, record.value().asInstanceOf[Struct],
+            expectedSchemaForSingleTable)
+        } else if (record.topic() == SECOND_TOPIC) {
+          compareSchema(expectedSchemaForSecondTable, record.valueSchema())
+          assert(record.value().isInstanceOf[Struct])
+          compareData(expectedDataForSecondTable, record.value().asInstanceOf[Struct],
+            expectedSchemaForSecondTable)
+        }
+      })
+    } finally {
+      connection.close()
+    }
   }
 
   test("incremental column load test") {
     val connection = incrLoadJdbcClient.getConnection
-    val stmt = connection.createStatement()
-    stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR_LOAD + "values(1, 'Lukas')")
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR_LOAD + "values(1, 'Lukas')")
 
-    val expectedSchema = SchemaBuilder.struct().name("expected schema")
-                          .field("id", Schema.INT32_SCHEMA)
-                          .field("name", Schema.STRING_SCHEMA)
-    incrLoadTask.initialize(taskContext)
-    incrLoadTask.start(singleTableConfigInIncrementalMode())
-    var expectedData = new Struct(expectedSchema)
-                        .put("id", 1)
-                        .put("name", "Lukas")
+      val expectedSchema = SchemaBuilder.struct().name("expected schema")
+        .field("id", Schema.INT32_SCHEMA)
+        .field("name", Schema.STRING_SCHEMA)
+      incrLoadTask.initialize(taskContext)
+      incrLoadTask.start(singleTableConfigInIncrementalMode())
+      var expectedData = new Struct(expectedSchema)
+        .put("id", 1)
+        .put("name", "Lukas")
 
-    var records = incrLoadTask.poll()
-    assert(records.size() === 1)
+      var records = incrLoadTask.poll()
+      assert(records.size() === 1)
 
-    records.toList.foreach(record => {
-      compareSchema(expectedSchema, record.valueSchema())
-      assert(record.value().isInstanceOf[Struct])
-      compareData(expectedData, record.value().asInstanceOf[Struct],
-        expectedSchema)
-    })
+      records.toList.foreach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+      })
 
-    stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR_LOAD + "values(2, 'Lukas')")
-    records = incrLoadTask.poll()
-    // because this only takes the delta
-    assert(records.size() === 1)
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR_LOAD + "values(2, 'Lukas')")
+      records = incrLoadTask.poll()
+      // because this only takes the delta
+      assert(records.size() === 1)
 
-    records.toList.foreach(record => {
-      compareSchema(expectedSchema, record.valueSchema())
-      assert(record.value().isInstanceOf[Struct])
+      records.toList.foreach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
 
-      expectedData = new Struct(expectedSchema)
-                      .put("id", 2)
-                      .put("name", "Lukas")
-      compareData(expectedData, record.value().asInstanceOf[Struct],
-        expectedSchema)
-    })
+        expectedData = new Struct(expectedSchema)
+          .put("id", 2)
+          .put("name", "Lukas")
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+      })
+    } finally {
+      connection.close()
+    }
   }
 
   private def compareSchema(expectedSchema: Schema, actualSchema: Schema): Unit = {
@@ -223,7 +253,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
     val tmpDir = System.getProperty("java.io.tmpdir")
     props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "incrementing")

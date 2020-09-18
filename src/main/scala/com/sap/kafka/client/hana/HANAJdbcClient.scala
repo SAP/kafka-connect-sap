@@ -71,7 +71,9 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
        Class.forName(driver)
        Try(DriverManager.getConnection(jdbcUrl, connectionUser, connectionPassword))
        match {
-         case Success(conn) => conn
+         case Success(conn) =>
+           conn.setAutoCommit(false)
+           conn
          case Failure(ex) if isFailedToOpenConnectionException(ex) =>
            throw new HANAJdbcConnectionException(s"Opening a connection failed")
          case Failure(ex) =>
@@ -201,7 +203,6 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
       log.info(s"Creating collection:$collectionName with SQL: $query")
 
       val connection = getConnection
-      connection.setAutoCommit(false)
       val stmt = connection.createStatement()
       Try(stmt.execute(query)) match {
         case Failure(ex) => log.error("Error during collection creation", ex)

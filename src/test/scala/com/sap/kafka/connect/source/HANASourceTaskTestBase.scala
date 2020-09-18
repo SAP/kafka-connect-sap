@@ -44,45 +44,56 @@ class HANASourceTaskTestBase extends FunSuite
     time = new MockTime()
     jdbcClient = new MockJdbcClient(
       HANAParameters.getConfig(singleTableConfig()))
-    jdbcClient.getConnection.createStatement().execute("DROP ALL OBJECTS DELETE FILES")
-
-    task = new HANASourceTask(time, jdbcClient)
-
-    val offsetStorageReader = mock(classOf[OffsetStorageReader])
-
-    val partitions = new util.HashMap[String, String]()
-    partitions.putAll(SINGLE_TABLE_PARTITION_FOR_BULK_LOAD)
-    partitions.putAll(SINGLE_TABLE_PARTITION_FOR_INCR_LOAD)
-    partitions.putAll(FIRST_TABLE_PARTITION_FOR_MULTI_LOAD)
-    partitions.putAll(SECOND_TABLE_PARTITION_FOR_MULTI_LOAD)
-
-    val offsets: java.util.Map[java.util.Map[String, String],
-      java.util.Map[String, Object]] = new util.HashMap[java.util.Map[String, String],
-                                        java.util.Map[String, Object]]()
-    offsets.put(partitions, null)
-    when(offsetStorageReader.offsets[String](
-      any(classOf[util.Collection[util.Map[String, String]]]))).thenReturn(offsets)
-
-    taskContext = mock(classOf[SourceTaskContext])
-    when(taskContext.offsetStorageReader()).thenReturn(offsetStorageReader)
-
-    val fields = Seq(new Field("SCHEMA_NAME", 1, Schema.STRING_SCHEMA),
-                     new Field("TABLE_NAME", 2, Schema.STRING_SCHEMA),
-                     new Field("PARTITION", 3, Schema.INT32_SCHEMA))
     val connection = jdbcClient.getConnection
-    val stmt = connection.createStatement()
-    stmt.execute("CREATE SCHEMA IF NOT EXISTS SYS")
+    try {
+      connection.setAutoCommit(true)
+      connection.createStatement().execute("DROP ALL OBJECTS DELETE FILES")
 
-    jdbcClient.createTable(Some("SYS"), "M_CS_PARTITIONS", MetaSchema(null, fields), 3000)
-    stmt.execute("insert into \"SYS\".\"M_CS_PARTITIONS\" values('TEST', 'EMPLOYEES_SOURCE', 0)")
+      task = new HANASourceTask(time, jdbcClient)
+
+      val offsetStorageReader = mock(classOf[OffsetStorageReader])
+
+      val partitions = new util.HashMap[String, String]()
+      partitions.putAll(SINGLE_TABLE_PARTITION_FOR_BULK_LOAD)
+      partitions.putAll(SINGLE_TABLE_PARTITION_FOR_INCR_LOAD)
+      partitions.putAll(FIRST_TABLE_PARTITION_FOR_MULTI_LOAD)
+      partitions.putAll(SECOND_TABLE_PARTITION_FOR_MULTI_LOAD)
+
+      val offsets: java.util.Map[java.util.Map[String, String],
+        java.util.Map[String, Object]] = new util.HashMap[java.util.Map[String, String],
+        java.util.Map[String, Object]]()
+      offsets.put(partitions, null)
+      when(offsetStorageReader.offsets[String](
+        any(classOf[util.Collection[util.Map[String, String]]]))).thenReturn(offsets)
+
+      taskContext = mock(classOf[SourceTaskContext])
+      when(taskContext.offsetStorageReader()).thenReturn(offsetStorageReader)
+
+      val fields = Seq(new Field("SCHEMA_NAME", 1, Schema.STRING_SCHEMA),
+        new Field("TABLE_NAME", 2, Schema.STRING_SCHEMA),
+        new Field("PARTITION", 3, Schema.INT32_SCHEMA))
+
+      val stmt = connection.createStatement()
+      stmt.execute("CREATE SCHEMA IF NOT EXISTS SYS")
+
+      jdbcClient.createTable(Some("SYS"), "M_CS_PARTITIONS", MetaSchema(null, fields), 3000)
+      stmt.execute("insert into \"SYS\".\"M_CS_PARTITIONS\" values('TEST', 'EMPLOYEES_SOURCE', 0)")
+    } finally {
+      connection.close()
+    }
   }
 
   override def afterAll(): Unit = {
     val connection = jdbcClient.getConnection
-    val stmt = connection.createStatement()
-    stmt.execute("drop table \"SYS\".\"M_CS_PARTITIONS\"")
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      stmt.execute("drop table \"SYS\".\"M_CS_PARTITIONS\"")
 
-    stmt.execute("DROP ALL OBJECTS DELETE FILES")
+      stmt.execute("DROP ALL OBJECTS DELETE FILES")
+    } finally {
+      connection.close()
+    }
   }
 
   protected def singleTableConfig(): java.util.Map[String, String] = {
@@ -90,7 +101,7 @@ class HANASourceTaskTestBase extends FunSuite
 
     val tmpDir = System.getProperty("java.io.tmpdir")
     props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "bulk")
@@ -107,7 +118,7 @@ class HANASourceTaskTestBase extends FunSuite
 
     val tmpDir = System.getProperty("java.io.tmpdir")
     props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "bulk")

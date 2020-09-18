@@ -51,11 +51,16 @@ class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
     jdbcClient.createTable(Some("TEST"), "EMPLOYEES_SOURCE", MetaSchema(null, fields),
       3000)
     val connection = jdbcClient.getConnection
-    val stmt = connection.createStatement()
-    stmt.execute("insert into \"TEST\".\"EMPLOYEES_SOURCE\" values(" + sqlValue.toString + ")")
-    val records = task.poll()
-    validateRecords(records.asScala.toList, convertedSchema, convertedValue)
-    stmt.execute("drop table \"TEST\".\"EMPLOYEES_SOURCE\"")
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      stmt.execute("insert into \"TEST\".\"EMPLOYEES_SOURCE\" values(" + sqlValue.toString + ")")
+      val records = task.poll()
+      validateRecords(records.asScala.toList, convertedSchema, convertedValue)
+      stmt.execute("drop table \"TEST\".\"EMPLOYEES_SOURCE\"")
+    } finally {
+      connection.close()
+    }
   }
 
   private def validateRecords(records: List[SourceRecord], expectedFieldSchema: Schema,
