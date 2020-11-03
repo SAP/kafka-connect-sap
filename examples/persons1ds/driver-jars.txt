@@ -1,1 +1,0 @@
-com.sap.cloud.db.jdbc:ngdbc:2.5.49

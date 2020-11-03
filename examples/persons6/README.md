@@ -18,7 +18,7 @@ This description assumes Kafka 2.4.1 is installed on local machine and environme
 ##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../person1).
 
 - start Kafka
-- install kafka-connect-hana
+- install kafka-connector-hana
 
 ###### Start Confluent registry
 
@@ -42,11 +42,11 @@ In order to use Apicurio registry, its client libraries must be placed in the co
 Run the following command to download those jar files into the target directory.
 
 ```
-$ make get_libs
-Getting jar files into target ...
+$ mvn install
+...
 $ ls target
 avro-1.9.2.jar                          kafka-connect-avro-converter-5.4.2.jar
-common-config-5.4.2.jar                 kafka-connect-hana-1.0-SNAPSHOT.jar
+common-config-5.4.2.jar                 kafka-connector-hana-1.0.0-SNAPSHOT.jar
 common-utils-5.4.2.jar                  kafka-schema-registry-client-5.4.2.jar
 kafka-avro-serializer-5.4.2.jar         ngdbc-2.5.49.jar
 $ 
@@ -55,12 +55,12 @@ $
 We copy the downloaded jar files into the connector's plugin directory.
 
 ```
-$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connect-hana
+$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connector-hana
 $
 $ cd $KAFKA_HOME
-$ ls plugins/kafka-connect-hana
+$ ls plugins/kafka-connector-hana
 avro-1.9.2.jar                          kafka-connect-avro-converter-5.4.2.jar
-common-config-5.4.2.jar                 kafka-connect-hana-1.0-SNAPSHOT.jar
+common-config-5.4.2.jar                 kafka-connector-hana-1.0.0-SNAPSHOT.jar
 common-utils-5.4.2.jar                  kafka-schema-registry-client-5.4.2.jar
 kafka-avro-serializer-5.4.2.jar         ngdbc-2.5.45.jar
 $ 

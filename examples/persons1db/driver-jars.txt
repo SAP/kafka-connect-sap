@@ -1,2 +1,0 @@
-com.sap.cloud.db.jdbc:ngdbc:2.5.49
-com.google.guava:guava:20.0

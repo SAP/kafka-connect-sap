@@ -40,9 +40,9 @@ Using KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.17.0.3:9092
 ...
 ```
 
-Before we start Kafka-Connect, we must prepare the Docker image that contains kafka-connect-hana.
+Before we start Kafka-Connect, we must prepare the Docker image that contains kafka-connector-hana.
 
-##### Steps 2: Build Docker image for kafka-connect-hana
+##### Steps 2: Build Docker image for kafka-connector-hana
 
 First, run `make get_libs` to place the required jar files into directory `target`.
 
@@ -52,7 +52,7 @@ Getting jar files into target ...
 $
 $ ls target 
 guava-20.0.jar                       ngdbc-2.5.49.jar
-kafka-connect-hana-1.0-SNAPSHOT.jar
+kafka-connector-hana-1.0.0-SNAPSHOT.jar
 $
 ```
 
