@@ -22,12 +22,14 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
   protected var multiTableLoadTask: HANASourceTask = _
   protected var incrLoadJdbcClient: MockJdbcClient = _
   protected var incrLoadTask: HANASourceTask = _
+  protected var incr2LoadTask: HANASourceTask = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     incrLoadJdbcClient = new MockJdbcClient(
-      HANAParameters.getConfig(singleTableConfigInIncrementalMode()))
+      HANAParameters.getConfig(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR_LOAD, "id")))
     incrLoadTask = new HANASourceTask(time, incrLoadJdbcClient)
+    incr2LoadTask = new HANASourceTask(time, incrLoadJdbcClient)
     multiTableJdbcClient = new MockJdbcClient(
       HANAParameters.getConfig(multiTableConfig()))
     multiTableLoadTask = new HANASourceTask(time, multiTableJdbcClient)
@@ -39,6 +41,10 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     incrLoadJdbcClient.createTable(Some("TEST"),
       SINGLE_TABLE_NAME_FOR_INCR_LOAD.split("\\.")(1).replace("\"", ""),
       MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA),
+        new Field("name", 2, Schema.STRING_SCHEMA))), 3000)
+    incrLoadJdbcClient.createTable(Some("TEST"),
+      SINGLE_TABLE_NAME_FOR_INCR2_LOAD.split("\\.")(1).replace("\"", ""),
+      MetaSchema(null, Seq(new Field("id", 1, Schema.STRING_SCHEMA),
         new Field("name", 2, Schema.STRING_SCHEMA))), 3000)
     multiTableJdbcClient.createTable(Some("TEST"),
       FIRST_TABLE_NAME_FOR_MULTI_LOAD.split("\\.")(1).replace("\"", ""),
@@ -73,9 +79,11 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       connection.setAutoCommit(true)
       val statement = connection.createStatement()
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_LOAD)
+      statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR2_LOAD)
     } finally {
       connection.close()
     }
+
     super.afterAll()
   }
 
@@ -189,7 +197,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
         .field("id", Schema.INT32_SCHEMA)
         .field("name", Schema.STRING_SCHEMA)
       incrLoadTask.initialize(taskContext)
-      incrLoadTask.start(singleTableConfigInIncrementalMode())
+      incrLoadTask.start(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR_LOAD, "id"))
       var expectedData = new Struct(expectedSchema)
         .put("id", 1)
         .put("name", "Lukas")
@@ -224,6 +232,52 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     }
   }
 
+  test("incremental2 column load test") {
+    val connection = incrLoadJdbcClient.getConnection
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR2_LOAD + "values('1', 'Lukas')")
+
+      val expectedSchema = SchemaBuilder.struct().name("expected schema")
+        .field("id", Schema.STRING_SCHEMA)
+        .field("name", Schema.STRING_SCHEMA)
+      incr2LoadTask.initialize(taskContext)
+      incr2LoadTask.start(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR2_LOAD, "id"))
+      var expectedData = new Struct(expectedSchema)
+        .put("id", "1")
+        .put("name", "Lukas")
+
+      var records = incr2LoadTask.poll()
+      assert(records.size() === 1)
+
+      records.toList.foreach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+      })
+
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR2_LOAD + "values('2', 'Lukas')")
+      records = incr2LoadTask.poll()
+      // because this only takes the delta
+      assert(records.size() === 1)
+
+      records.toList.foreach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
+
+        expectedData = new Struct(expectedSchema)
+          .put("id", "2")
+          .put("name", "Lukas")
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+      })
+    } finally {
+      connection.close()
+    }
+  }
+
   private def compareSchema(expectedSchema: Schema, actualSchema: Schema): Unit = {
     val expectedFields = expectedSchema.fields().toList
     val actualFields = actualSchema.fields().toList
@@ -247,7 +301,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     })
   }
 
-  protected def singleTableConfigInIncrementalMode():
+  protected def singleTableConfigInIncrementalMode(tableName: String, columnName: String):
   java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
@@ -258,10 +312,10 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     props.put("connection.password", "sa")
     props.put("mode", "incrementing")
     props.put("topics", TOPIC)
-    props.put(s"$TOPIC.table.name", SINGLE_TABLE_NAME_FOR_INCR_LOAD)
+    props.put(s"$TOPIC.table.name", tableName)
     props.put(s"$TOPIC.partition.count", "5")
     props.put(s"$TOPIC.poll.interval.ms", "60000")
-    props.put(s"$TOPIC.incrementing.column.name", "id")
+    props.put(s"$TOPIC.incrementing.column.name", columnName)
 
     props
   }

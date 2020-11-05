@@ -20,6 +20,7 @@ class HANASourceTaskTestBase extends FunSuite
   protected val SINGLE_TABLE_NAME_FOR_BULK_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE\""
 
   protected val SINGLE_TABLE_NAME_FOR_INCR_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR_LOAD\""
+  protected val SINGLE_TABLE_NAME_FOR_INCR2_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR2_LOAD\""
 
   protected val FIRST_TABLE_NAME_FOR_MULTI_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_MULTI_LOAD\""
   protected val SECOND_TABLE_NAME_FOR_MULTI_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_SECOND_FOR_MULTI_LOAD\""
@@ -28,6 +29,8 @@ class HANASourceTaskTestBase extends FunSuite
   SINGLE_TABLE_PARTITION_FOR_BULK_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_BULK_LOAD + "_0")
   protected val SINGLE_TABLE_PARTITION_FOR_INCR_LOAD = new util.HashMap[String, String]()
   SINGLE_TABLE_PARTITION_FOR_INCR_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR_LOAD + "_0")
+  protected val SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD = new util.HashMap[String, String]()
+  SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR2_LOAD + "_0")
   protected val FIRST_TABLE_PARTITION_FOR_MULTI_LOAD = new util.HashMap[String, String]()
   FIRST_TABLE_PARTITION_FOR_MULTI_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, FIRST_TABLE_NAME_FOR_MULTI_LOAD + "_0")
   protected val SECOND_TABLE_PARTITION_FOR_MULTI_LOAD = new util.HashMap[String, String]()
@@ -56,6 +59,7 @@ class HANASourceTaskTestBase extends FunSuite
       val partitions = new util.HashMap[String, String]()
       partitions.putAll(SINGLE_TABLE_PARTITION_FOR_BULK_LOAD)
       partitions.putAll(SINGLE_TABLE_PARTITION_FOR_INCR_LOAD)
+      partitions.putAll(SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD)
       partitions.putAll(FIRST_TABLE_PARTITION_FOR_MULTI_LOAD)
       partitions.putAll(SECOND_TABLE_PARTITION_FOR_MULTI_LOAD)
 

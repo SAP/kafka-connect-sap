@@ -27,6 +27,7 @@ object TimestampIncrementingOffset {
 
   private val DEFAULT_DATE = "1970-01-01 00:00:00.000"
   private val DEFAULT_VAL = "-1"
+  private val STRING_VALIDATOR = "^[\\w :-]+$".r
 
   def apply(map: Map[String, _], incrColumn: String,
             incrColType: Int): TimestampIncrementingOffset = {
@@ -49,14 +50,18 @@ object TimestampIncrementingOffset {
   }
 
   def convertToTableDataType(value: String, dataType: Int) = {
-    if (dataType == java.sql.Types.DATE) {
-      s"'$value'"
-    } else if (dataType == java.sql.Types.TIME) {
-      s"'$value'"
-    } else if (dataType == java.sql.Types.TIMESTAMP) {
-      s"'$value'"
-    } else {
-      value
+    dataType match {
+      case java.sql.Types.DATE | java.sql.Types.TIME | java.sql.Types.TIMESTAMP =>
+        s"'$value'"
+      case java.sql.Types.VARCHAR | java.sql.Types.NVARCHAR | java.sql.Types.CHAR | java.sql.Types.NCHAR =>
+        // REVISIT this is a temporary workaround while using a plain statement
+        val sanitized = value match {
+          case STRING_VALIDATOR() => value
+          case _ => value.replaceAll("[^\\w :-]", "")
+        }
+        s"'$sanitized'"
+      case _ =>
+        value
     }
   }
 }

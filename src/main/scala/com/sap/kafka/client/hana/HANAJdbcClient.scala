@@ -454,7 +454,7 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
   private def getColumnData(columnType: Int, resultSet: ResultSet, index: Int) = {
     val value = columnType match {
       case java.sql.Types.VARCHAR | java.sql.Types.NVARCHAR |
-        java.sql.Types.NCHAR | java.sql.Types.CHAR | java.sql.Types.LONGNVARCHAR
+        java.sql.Types.NCHAR | java.sql.Types.CHAR | java.sql.Types.LONGVARCHAR
         | java.sql.Types.LONGNVARCHAR => resultSet.getString(index)
 
       case java.sql.Types.BOOLEAN => resultSet.getBoolean(index)

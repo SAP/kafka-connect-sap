@@ -170,7 +170,7 @@ trait GenericJdbcTypeConverter {
         if (optional)
           fieldBuilder.optional()
         builder.field(fieldname, fieldBuilder.build())
-      case java.sql.Types.CHAR | java.sql.Types.VARCHAR | java.sql.Types.LONGNVARCHAR |
+      case java.sql.Types.CHAR | java.sql.Types.VARCHAR | java.sql.Types.LONGVARCHAR |
            java.sql.Types.NCHAR | java.sql.Types.NVARCHAR | java.sql.Types.LONGNVARCHAR |
            java.sql.Types.CLOB | java.sql.Types.NCLOB | java.sql.Types.DATALINK |
            java.sql.Types.SQLXML =>

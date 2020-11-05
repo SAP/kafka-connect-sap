@@ -131,7 +131,7 @@ from where clause in query sql.
   * `{topic}.poll.interval.ms` - This setting allows specifying the poll interval at which the data should be fetched from SAP DB table. Should be an `Integer`. Default value is `60000`.
 
   * `{topic}.incrementing.column.name` - In order to fetch data from a SAP DB table when `mode` is set to `incrementing`, an incremental ( or auto-incremental ) column needs to be provided. The type 
-of the column can be `Int, Float, Decimal, Timestamp`. This considers SAP DB Timeseries tables also. Should be a valid clumn name ( respresented as a `String`) present in the table. 
+of the column can be numeric types such as `INTEGER`, `FLOAT`, `DECIMAL`, datetime types such as `DATE`, `TIME`, `TIMESTAMP`, and character types `VARCHAR`, `NVARCHAR` containing alpha-numeric characters. This considers SAP DB Timeseries tables also. Should be a valid column name ( respresented as a `String`) present in the table. See [data types in SAP HANA](https://help.sap.com/viewer/4fe29514fd584807ac9f2a04f6754767/LATEST/en-US/20a1569875191014b507cf392724b7eb.html)
  
   * `{topic}.partition.count` - This setting can be used to specify the no. of topic partitions that the Source connector can use to publish the data. Should be an `Integer`. Default value is `1`.
 
