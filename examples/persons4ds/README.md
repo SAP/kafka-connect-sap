@@ -12,7 +12,7 @@ This example is a distributed version of example persons4 using strimizi kafka d
 
 This description assumes Docker and Docker-Compose are available on local machine.
 
-##### Steps 1: Build Docker image for kafka-connect-hana
+##### Steps 1: Build Docker image for kafka-connector-hana
 
 First, run `make get_libs` to place the required jar files into directory `target`.
 
@@ -28,7 +28,7 @@ apicurio-registry-utils-serde-1.2.3.Final.jar      jersey-media-json-binding-2.2
 avro-1.9.2.jar                                     jersey-mp-config-2.29.1.jar
 cdi-api-2.0.jar                                    jersey-mp-rest-client-2.29.1.jar
 geronimo-config-impl-1.2.2.jar                     jersey-server-2.29.1.jar
-jakarta.json-1.1.5.jar                             kafka-connect-hana-1.0-SNAPSHOT.jar
+jakarta.json-1.1.5.jar                             kafka-connector-hana-1.0.0-SNAPSHOT.jar
 jakarta.json-api-1.1.5.jar                         microprofile-config-api-1.4.jar
 jakarta.json.bind-api-1.0.2.jar                    microprofile-rest-client-api-1.4.0.jar
 javax.interceptor-api-1.2.jar                      ngdbc-2.5.49.jar
@@ -49,10 +49,10 @@ Step 1/5 : FROM strimzi/kafka:0.19.0-kafka-2.4.1
 Step 2/5 : USER root:root
  ---> Using cache
  ---> e651c111cfd0
-Step 3/5 : RUN mkdir -p /opt/kafka/plugins/kafka-connect-hana
+Step 3/5 : RUN mkdir -p /opt/kafka/plugins/kafka-connector-hana
  ---> Using cache
  ---> b5e5ec331af9
-Step 4/5 : COPY ./target/ /opt/kafka/plugins/kafka-connect-hana/
+Step 4/5 : COPY ./target/ /opt/kafka/plugins/kafka-connector-hana/
  ---> Using cache
  ---> d04b23041483
 Step 5/5 : USER 1001

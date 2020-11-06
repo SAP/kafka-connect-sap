@@ -16,7 +16,7 @@ This description assumes Kafka 2.4.1 is installed on local machine and environme
 ##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../persons1).
 
 - start Kafka
-- install kafka-connect-hana
+- install kafka-connector-hana
 
 ##### Step 3: Prepare the connector configuration files
 

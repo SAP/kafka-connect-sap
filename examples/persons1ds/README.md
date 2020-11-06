@@ -12,7 +12,7 @@ This example is a distributed version of example persons1 using strimizi kafka d
 
 This description assumes Docker and Docker-Compose are available on local machine.
 
-##### Steps 1: Build Docker image for kafka-connect-hana
+##### Steps 1: Build Docker image for kafka-connector-hana
 
 First, run `make get_libs` to place the required jar files into directory `target`.
 
@@ -21,7 +21,7 @@ $ make get_libs
 Getting jar files into target ...
 $
 $ ls target 
-kafka-connect-hana-1.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
+kafka-connector-hana-1.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
 $
 ```
 
@@ -37,10 +37,10 @@ Step 1/5 : FROM strimzi/kafka:0.19.0-kafka-2.4.1
 Step 2/5 : USER root:root
  ---> Using cache
  ---> e651c111cfd0
-Step 3/5 : RUN mkdir -p /opt/kafka/plugins/kafka-connect-hana
+Step 3/5 : RUN mkdir -p /opt/kafka/plugins/kafka-connector-hana
  ---> Using cache
  ---> b5e5ec331af9
-Step 4/5 : COPY ./target/ /opt/kafka/plugins/kafka-connect-hana/
+Step 4/5 : COPY ./target/ /opt/kafka/plugins/kafka-connector-hana/
  ---> Using cache
  ---> d04b23041483
 Step 5/5 : USER 1001

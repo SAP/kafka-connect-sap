@@ -17,7 +17,7 @@ This description assumes Kafka 2.4.1 is installed on local machine and environme
 ##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../person1).
 
 - start Kafka
-- install kafka-connect-hana
+- install kafka-connector-hana
 
 ###### Start Apicurio registry
 
@@ -84,8 +84,8 @@ In order to use Apicurio registry, its client libraries must be placed in the co
 
 
 ```
-$ make get_libs
-Getting jar files into target ...
+$ mvn install
+...
 $
 $ ls target
 apicurio-registry-client-1.2.3.Final.jar           jersey-common-2.29.1.jar
@@ -95,7 +95,7 @@ apicurio-registry-utils-serde-1.2.3.Final.jar      jersey-media-json-binding-2.2
 avro-1.9.2.jar                                     jersey-mp-config-2.29.1.jar
 cdi-api-2.0.jar                                    jersey-mp-rest-client-2.29.1.jar
 geronimo-config-impl-1.2.2.jar                     jersey-server-2.29.1.jar
-jakarta.json-1.1.5.jar                             kafka-connect-hana-1.0-SNAPSHOT.jar
+jakarta.json-1.1.5.jar                             kafka-connector-hana-1.0.0-SNAPSHOT.jar
 jakarta.json-api-1.1.5.jar                         microprofile-config-api-1.4.jar
 jakarta.json.bind-api-1.0.2.jar                    microprofile-rest-client-api-1.4.0.jar
 javax.interceptor-api-1.2.jar                      ngdbc-2.5.49.jar
@@ -107,7 +107,7 @@ $
 We copy the downloaded jar files into the connector's plugin directory.
 
 ```
-$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connect-hana
+$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connector-hana
 $
 ```
 

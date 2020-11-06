@@ -27,29 +27,29 @@ $ ...
 
 For more information regarding how to start Kafka, refer to https://kafka.apache.org/quickstart.
 
-##### Step 2: Install the jar files for kafka-connect-hana
+##### Step 2: Install the jar files for kafka-connector-hana
 
 We install the jar files into a dedicated directory within the plugins directory `plugins` that we create at `$KAFKA_HOME`.
 
-First, we create a plugins directory `$KAFKA_HOME/plugins` if not yet created and create directory `kafka-connect-hana` within this directory. 
+First, we create a plugins directory `$KAFKA_HOME/plugins` if not yet created and create directory `kafka-connector-hana` within this directory. 
 ```
-$ mkdir -p $KAFKA_HOME/plugins/kafka-connect-hana
+$ mkdir -p $KAFKA_HOME/plugins/kafka-connector-hana
 $
 ```
 
-Assuming this project has been built (see Building), run `make get_libs` to place the required jar files including the HANA jdbc driver into directory 'target'.
+Assuming this project has been built (see Building), run `mvn install` to place the required jar files including the HANA jdbc driver into directory 'target'.
 
 ```
-$ make get_libs
-Getting jar files into target ...
+$ mvn install
+...
 $ ls target
-kafka-connect-hana-1.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
+kafka-connector-hana-1.0.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
 $
 ```
-Copy those jar files into `$KAFKA_HOME/plugins/kafka-connect-hana` directory.
+Copy those jar files into `$KAFKA_HOME/plugins/kafka-connector-hana` directory.
 
 ```
-$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connect-hana
+$ cp target/*.jar $KAFKA_HOME/plugins/kafka-connector-hana
 $
 ```
 
