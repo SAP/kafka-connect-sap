@@ -123,10 +123,11 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
   * `mode` - This setting can be used to specify the mode in which data should be fetched from SAP DB table. Default is `bulk`. And supported values are `bulk, incrementing`.
 
   * `queryMode` - This setting can be used to specify the query mode in which data should be fetched from SAP DB table. Default is `table`. And supported values are `table, query ( to support sql queries )`. When 
-using `queryMode: query` it is also required to have `query` parameter defined. This query parameter needs to be prepended by TopicName. If the `incrementing.column.name` property is used together, then it can be omitted
-from where clause in query sql. 
+using `queryMode: query` it is also required to have `query` parameter defined. This query parameter needs to be prepended by TopicName. If the `incrementing.column.name` property is used together to constrain the result, then it can be omitted from its where clause.
 
-  * `{topic}.table.name` - This setting allows specifying the SAP DB table name where the data needs to be written to. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
+  * `{topic}.table.name` - This setting allows specifying the SAP DB table name where the data needs to be read from. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
+
+  * `{topic}.query` - This setting allows specifying the query statement when `queryMode` is set to `query`. Should be a `String`.
 
   * `{topic}.poll.interval.ms` - This setting allows specifying the poll interval at which the data should be fetched from SAP DB table. Should be an `Integer`. Default value is `60000`.
 

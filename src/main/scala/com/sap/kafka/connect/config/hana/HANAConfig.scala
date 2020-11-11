@@ -34,7 +34,7 @@ case class HANAConfig(props: Map[String, String]) extends BaseConfig(props: Map[
     }
 
     if (topicPropMap.get("table.name").isEmpty && topicPropMap.get("query").isEmpty) {
-      throw new HANAConfigMissingException("A table name must be specified for HANA-Kafka " +
+      throw new HANAConfigMissingException("A table name or query must be specified for HANA-Kafka " +
         "connectors to work")
     }
 

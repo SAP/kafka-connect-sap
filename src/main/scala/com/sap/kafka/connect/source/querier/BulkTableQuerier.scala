@@ -33,8 +33,7 @@ class BulkTableQuerier(mode: String, tableOrQuery: String, tablePartition: Int, 
           case BaseConfigConstants.QUERY_MODE_TABLE =>
             partition = Map(SourceConnectorConstants.TABLE_NAME_KEY -> tableName)
           case BaseConfigConstants.QUERY_MODE_SQL =>
-            val partitionName = "Query"
-            partition = Map(SourceConnectorConstants.QUERY_NAME_KEY -> partitionName)
+            partition = Map(SourceConnectorConstants.QUERY_NAME_KEY -> SourceConnectorConstants.QUERY_NAME_VALUE)
           case _ => throw new ConfigException(s"Unexpected query mode: $mode")
         }
         new SourceRecord(partition.asJava, null, topic,
