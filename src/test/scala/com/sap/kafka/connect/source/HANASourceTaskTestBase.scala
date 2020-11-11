@@ -18,19 +18,25 @@ import org.mockito.Matchers.any
 class HANASourceTaskTestBase extends FunSuite
                               with BeforeAndAfterAll {
   protected val SINGLE_TABLE_NAME_FOR_BULK_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE\""
+  protected val SINGLE_TABLE_NAME_FOR_BULK_QUERY_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_QUERY\""
 
   protected val SINGLE_TABLE_NAME_FOR_INCR_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR_LOAD\""
   protected val SINGLE_TABLE_NAME_FOR_INCR2_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR2_LOAD\""
+  protected val SINGLE_TABLE_NAME_FOR_INCR_QUERY_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR_QUERY_LOAD\""
 
   protected val FIRST_TABLE_NAME_FOR_MULTI_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_MULTI_LOAD\""
   protected val SECOND_TABLE_NAME_FOR_MULTI_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_SECOND_FOR_MULTI_LOAD\""
 
   protected val SINGLE_TABLE_PARTITION_FOR_BULK_LOAD = new util.HashMap[String, String]()
   SINGLE_TABLE_PARTITION_FOR_BULK_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_BULK_LOAD + "_0")
+  protected val SINGLE_TABLE_PARTITION_FOR_BULK_QUERY_LOAD = new util.HashMap[String, String]()
+  SINGLE_TABLE_PARTITION_FOR_BULK_QUERY_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_PARTITION_FOR_BULK_QUERY_LOAD + "_0")
   protected val SINGLE_TABLE_PARTITION_FOR_INCR_LOAD = new util.HashMap[String, String]()
   SINGLE_TABLE_PARTITION_FOR_INCR_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR_LOAD + "_0")
   protected val SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD = new util.HashMap[String, String]()
   SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR2_LOAD + "_0")
+  protected val SINGLE_TABLE_PARTITION_FOR_INCR_QUERY_LOAD = new util.HashMap[String, String]()
+  SINGLE_TABLE_PARTITION_FOR_INCR_QUERY_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR_QUERY_LOAD + "_0")
   protected val FIRST_TABLE_PARTITION_FOR_MULTI_LOAD = new util.HashMap[String, String]()
   FIRST_TABLE_PARTITION_FOR_MULTI_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, FIRST_TABLE_NAME_FOR_MULTI_LOAD + "_0")
   protected val SECOND_TABLE_PARTITION_FOR_MULTI_LOAD = new util.HashMap[String, String]()
@@ -58,8 +64,10 @@ class HANASourceTaskTestBase extends FunSuite
 
       val partitions = new util.HashMap[String, String]()
       partitions.putAll(SINGLE_TABLE_PARTITION_FOR_BULK_LOAD)
+      partitions.putAll(SINGLE_TABLE_PARTITION_FOR_BULK_QUERY_LOAD)
       partitions.putAll(SINGLE_TABLE_PARTITION_FOR_INCR_LOAD)
       partitions.putAll(SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD)
+      partitions.putAll(SINGLE_TABLE_PARTITION_FOR_INCR_QUERY_LOAD)
       partitions.putAll(FIRST_TABLE_PARTITION_FOR_MULTI_LOAD)
       partitions.putAll(SECOND_TABLE_PARTITION_FOR_MULTI_LOAD)
 
@@ -135,6 +143,24 @@ class HANASourceTaskTestBase extends FunSuite
     props.put(s"$SECOND_TOPIC.table.name", SECOND_TABLE_NAME_FOR_MULTI_LOAD)
     props.put(s"$SECOND_TOPIC.partition.count", "1")
     props.put(s"$SECOND_TOPIC.poll.interval.ms", "60000")
+
+    props
+  }
+
+  protected def singleTableQueryConfig(): java.util.Map[String, String] = {
+    val props = new util.HashMap[String, String]()
+
+    val tmpDir = System.getProperty("java.io.tmpdir")
+    props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
+      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
+    props.put("connection.user", "sa")
+    props.put("connection.password", "sa")
+    props.put("mode", "bulk")
+    props.put("queryMode", "query")
+    props.put("topics", TOPIC)
+    props.put(s"$TOPIC.query", s"select * from $SINGLE_TABLE_NAME_FOR_BULK_QUERY_LOAD")
+    props.put(s"$TOPIC.partition.count", "1")
+    props.put(s"$TOPIC.poll.interval.ms", "60000")
 
     props
   }

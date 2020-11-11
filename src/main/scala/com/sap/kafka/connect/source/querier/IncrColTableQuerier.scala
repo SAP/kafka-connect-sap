@@ -65,8 +65,7 @@ class IncrColTableQuerier(mode: String, tableOrQuery: String, tablePartition: In
             val partitionName = tableName + tablePartition.toString
             partition = Map(SourceConnectorConstants.TABLE_NAME_KEY -> partitionName)
           case BaseConfigConstants.QUERY_MODE_SQL =>
-            val partitionName = "Query" + Random.nextInt()
-            partition = Map(SourceConnectorConstants.QUERY_NAME_KEY -> partitionName)
+            partition = Map(SourceConnectorConstants.QUERY_NAME_KEY -> SourceConnectorConstants.QUERY_NAME_VALUE)
           case _ => throw new ConfigException(s"Unexpected Query Mode: $mode")
         }
         new SourceRecord(partition.asJava, offset.toMap(), topic,
