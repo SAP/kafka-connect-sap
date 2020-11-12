@@ -89,22 +89,17 @@ class IncrColTableQuerier(mode: String, tableOrQuery: String, tablePartition: In
 
     metadata.foreach(metaAttr => {
       if (metaAttr.name.equals(incrementingCol)) {
-        if (metaAttr.dataType == java.sql.Types.INTEGER ||
-          metaAttr.dataType == java.sql.Types.BIGINT ||
-          metaAttr.dataType == java.sql.Types.FLOAT ||
-          metaAttr.dataType == java.sql.Types.DOUBLE ||
-          metaAttr.dataType == java.sql.Types.DECIMAL ||
-          metaAttr.dataType == java.sql.Types.REAL ||
-          metaAttr.dataType == java.sql.Types.DATE ||
-          metaAttr.dataType == java.sql.Types.TIME ||
-          metaAttr.dataType == java.sql.Types.TIMESTAMP) {
-          incrColumnType = metaAttr.dataType
-          return metaAttr.name
+        metaAttr.dataType match {
+          case java.sql.Types.INTEGER | java.sql.Types.BIGINT | java.sql.Types.FLOAT | java.sql.Types.DOUBLE | java.sql.Types.REAL |
+               java.sql.Types.DATE | java.sql.Types.TIME | java.sql.Types.TIMESTAMP |
+               java.sql.Types.VARCHAR | java.sql.Types.NVARCHAR | java.sql.Types.CHAR | java.sql.Types.NCHAR =>
+            incrColumnType = metaAttr.dataType
+            return metaAttr.name
         }
       }
     })
     throw new IllegalArgumentException("The Incrementing column is not found in the " +
-      "table or is not of correct type")
+      "table or is not of supported type")
   }
 
   /**
