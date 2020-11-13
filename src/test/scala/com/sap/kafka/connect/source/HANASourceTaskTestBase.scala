@@ -13,7 +13,7 @@ import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.mockito.Mockito.mock
 import org.mockito.Mockito._
 import org.apache.kafka.connect.data.{Field, Schema}
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 
 class HANASourceTaskTestBase extends FunSuite
                               with BeforeAndAfterAll {
