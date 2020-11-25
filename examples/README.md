@@ -6,5 +6,5 @@
 * [persons4](persons4) : standalone Source and Sink HANA-Connectors using Apicurio Schema Registry (Avro)
 * [persons6](persons6) : standalone Source and Sink HANA-Connectors using Confluent Schema Registry (Avro)
 * [persons1ds](persons1ds) : distributed version of persons1 using Docker with Strimzi Kafka image
-* [persons1db](persons1db) : distributed version of persons1 using Docker with Debezium Kafka-Connect image
+* [persons1db](persons1db) : distributed version of persons1 using Docker with Debezium Kafka image
 * [persons4ds](persons4ds) : distributed version of persons4 using Docker with Strimzi Kafka image

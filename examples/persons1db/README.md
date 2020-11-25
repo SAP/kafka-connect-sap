@@ -12,37 +12,7 @@ This example is a distributed version of example persons1 using debezium kafka-c
 
 This description assumes Docker and Docker-Compose are available on local machine. 
 
-##### Step 1: Start Zookeeper and Kafka
-
-First, we start both Zookeeper and Kafka using debezium zookeeper and kafka images. If you are not familiar with debezium, you can find more information at Debezim tutorial https://debezium.io/documentation/reference/1.2/tutorial.html
-
-Start Zookeeper using the following `docker run` command.
-
-```
-$ docker run -it --rm --name zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 debezium/zookeeper:1.2
-Starting up in standalone mode
-ZooKeeper JMX enabled by default
-Using config: /zookeeper/conf/zoo.cfg
-2020-09-09 22:42:33,018 - INFO  [main:QuorumPeerConfig@135] - Reading configuration from: /zookeeper/conf/zoo.cfg
-2020-09-09 22:42:33,031 - INFO  [main:QuorumPeerConfig@387] - clientPortAddress is 0.0.0.0:2181
-...
-```
-
-Start Kafka using the following `docker run` command.
-
-```
-$ docker run -it --rm --name kafka -p 9092:9092 --link zookeeper:zookeeper debezium/kafka:1.2
-WARNING: Using default BROKER_ID=1, which is valid only for non-clustered installations.
-Using ZOOKEEPER_CONNECT=172.17.0.2:2181
-Using KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.17.0.3:9092
-2020-09-09 22:43:05,396 - INFO  [main:Log4jControllerRegistration$@31] - Registered kafka:type=kafka.Log4jController MBean
-2020-09-09 22:43:05,934 - INFO  [main:X509Util@79] - Setting -D jdk.tls.rejectClientInitiatedRenegotiation=true to disable client-initiated TLS renegotiation
-...
-```
-
-Before we start Kafka-Connect, we must prepare the Docker image that contains kafka-connector-hana.
-
-##### Steps 2: Build Docker image for kafka-connector-hana
+##### Steps 1: Build Docker image for kafka-connector-hana
 
 First, run `make get_libs` to place the required jar files into directory `target`.
 
@@ -83,28 +53,28 @@ Successfully tagged debezium-connector-hana-min:latest
 $ 
 ```
 
-##### Step 3: Prepare the connector configuration files (Follow Step 2 of [persons1ds example](../persons1ds).
+##### Step 2: Prepare the connector configuration files (Follow Step 2 of [persons1ds example](../persons1ds).
 
-##### Step 4: Prepare the source table (Follow Step 4 of example persons1)
+##### Step 3: Prepare the source table (Follow Step 4 of example persons1)
 
-##### Step 5: Starting Kafka-Connect
+##### Step 4: Starting Zookeeper, Kafka, Kafka-Connect
 
-Start Kafka-Connect using the following `docker run` command.
+The docker-compose.yaml file defines zookeeper, kafka, and connect services. It is noted that Kafka broker uses its advertised host set to `host.docker.internal:9092` assumeing this host name is resolvable from the containers and at the host. This allows Kafka broker to be accessed from the container of Kafka-Connect and from the host for inspection.
+
+Run `docker-compose up` to start the containers.
 
 ```
-$ docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_statuses --link zookeeper:zookeeper --link kafka:kafka debezium-connector-hana-min:latest
-Plugins are loaded from /kafka/connect
-Using the following environment variables:
-      GROUP_ID=1
-      CONFIG_STORAGE_TOPIC=my_connect_configs
-      OFFSET_STORAGE_TOPIC=my_connect_offsets
-      STATUS_STORAGE_TOPIC=my_connect_statuses
-      BOOTSTRAP_SERVERS=172.17.0.3:9092
-      REST_HOST_NAME=172.17.0.4
+$ docker-compose up
+Creating network "persons1db_default" with the default driver
+Creating persons1db_zookeeper_1 ... done
+Creating persons1db_kafka_1     ... done
+Creating persons1db_connect_1   ... done
+Attaching to persons1db_zookeeper_1, persons1db_kafka_1, persons1db_connect_1
 ...
 ```
 
-After starting those Docker containers, we can verify whether Kafka-Connect is running using curl.
+
+After starting the Docker containers using docker-compose, we can verify whether Kafka-Connect is running using curl.
 
 ```
 $ curl -i http://localhost:8083/
@@ -167,54 +137,22 @@ $
 
 The above result shows that the connectors are deployed.
 
-##### Step 6: Verifying the result
-
-You can use debezium's watch-topic utility to look at the topic.
-
-```
-$ docker run -it --rm --name watcher --link zookeeper:zookeeper --link kafka:kafka debezium/kafka:1.2 watch-topic -a -k test_topic_1                 
-WARNING: Using default BROKER_ID=1, which is valid only for non-clustered installations.
-Using ZOOKEEPER_CONNECT=172.17.0.2:2181
-Using KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.17.0.5:9092
-Using KAFKA_BROKER=172.17.0.3:9092
-Contents of topic test_topic_1:
-null	{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"PERSONID"},{"type":"string","optional":true,"field":"LASTNAME"},{"type":"string","optional":true,"field":"FIRSTNAME"}],"optional":false,"name":"d025803persons1"},"payload":{"PERSONID":1,"LASTNAME":"simpson","FIRSTNAME":"homer"}}
-null	{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"PERSONID"},{"type":"string","optional":true,"field":"LASTNAME"},{"type":"string","optional":true,"field":"FIRSTNAME"}],"optional":false,"name":"d025803persons1"},"payload":{"PERSONID":2,"LASTNAME":"simpson","FIRSTNAME":"merge"}}
-...
-```
-
-You can also start another kafka container an interactive bash shell to inspect the topic using kafka-consule-consumer.sh.
-
-First, start the interactive bash shell with debezium kafka image
-
-```
-$ docker run -it --rm --link zookeeper:zookeeper --link kafka:kafka debezium/kafka:1.2 /bin/bash
-WARNING: Using default BROKER_ID=1, which is valid only for non-clustered installations.
-Using ZOOKEEPER_CONNECT=172.17.0.2:2181
-Using KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.17.0.5:9092
-[kafka@2f92f972f2b6 ~]$
-```
-
-In the interactive shell, use kafka-console-consumer.sh to connect kafka:9092 to inspect the topic.
-
-```
-[kafka@2f92f972f2b6 ~]$ bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic test_topic_1 --from-beginning
-{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"PERSONID"},{"type":"string","optional":true,"field":"LASTNAME"},{"type":"string","optional":true,"field":"FIRSTNAME"}],"optional":false,"name":"d025803persons1"},"payload":{"PERSONID":1,"LASTNAME":"simpson","FIRSTNAME":"homer"}}
-{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"PERSONID"},{"type":"string","optional":true,"field":"LASTNAME"},{"type":"string","optional":true,"field":"FIRSTNAME"}],"optional":false,"name":"d025803persons1"},"payload":{"PERSONID":2,"LASTNAME":"simpson","FIRSTNAME":"merge"}}
-...
-```
+##### Step 5: Verifying the result (Follow Step 6 of example persions1 and/or persons2)
 
 It is noted that this scenario builds the Docker image without schema registry usage and runs Kafka Connect in the distributed mode. Additional connectors can be deployed to this Kafka Connect instance which use the same distributed-connect.properties configuration.
 
-##### Step 7: Cleaning up
+##### Step 6: Shut down
 
-Use docker stop to terminate the containers.
+Use `docker-compose down` to shutdown the containers.
 
 ```
-$ docker stop watcher connect kafka zookeeper
-watcher
-connect
-kafka
-zookeeper
+$ docker-compose down
+Stopping persons1db_connect_1   ... done
+Stopping persons1db_kafka_1     ... done
+Stopping persons1db_zookeeper_1 ... done
+Removing persons1db_connect_1   ... done
+Removing persons1db_kafka_1     ... done
+Removing persons1db_zookeeper_1 ... done
+Removing network persons1db_default
 $ 
 ```
