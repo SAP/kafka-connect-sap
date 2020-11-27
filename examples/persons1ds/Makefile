@@ -15,3 +15,9 @@ get_libs:
 docker_build:
 	@echo "Building docker image ..."
 	docker build . -t strimzi-connector-hana-min
+
+.PHONY: docker_push
+docker_push:
+	@echo "Pushing docker image ..."
+	docker tag strimzi-connector-hana-min ${DOCKER_REGISTRY}/strimzi-connector-hana-min:${DOCKER_TAG}
+	docker push ${DOCKER_REGISTRY}/strimzi-connector-hana-min:${DOCKER_TAG}

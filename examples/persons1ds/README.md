@@ -57,7 +57,7 @@ We use connect-distributed.properties stored in directory custom-config for conf
 
 ##### Step 3: Prepare the source table (Follow Step 4 of example persons1)
 
-##### Step 4: Starting Zookeeper, Kafka, Kafka-Coonnect
+##### Step 4: Starting Zookeeper, Kafka, Kafka-Connect
 
 The docker-compose.yaml file defines zookeeper, kafka, and connect services. It is noted that Kafka broker uses its advertised host set to `host.docker.internal:9092` assumeing this host name is resolvable from the containers and at the host. This allows Kafka broker to be accessed from the container of Kafka-Connect and from the host for inspection.
 
