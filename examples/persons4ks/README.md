@@ -77,7 +77,7 @@ $
 
 ##### Step 5: Prepare the connector configuration files
 
-Follow the step for persons4ds to prepare the connector json files and make sure the following converter properties are set.
+Follow the step for persons1ks and persons4ds to prepare the connector json files but make sure the following converter properties are set to use the Avro messages with Apicurio schema registry.
 
 ```
 {
@@ -91,10 +91,6 @@ Follow the step for persons4ds to prepare the connector json files and make sure
         "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
     }
 }
-```
-
-As the above configuration does not expose the external port from Kafka Connect's pod `my-connect-cluster-connect-api`, open another console and add port-forwarding to the local system.
-
 ```
 
 ##### Step 6: Verifying the result (Follow Step 6 of example persions1 and/or persons2)
