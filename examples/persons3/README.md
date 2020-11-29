@@ -24,7 +24,7 @@ This description assumes Kafka 2.4.1 is installed on local machine and environme
 In addition to the above steps described in example [persons1](../persons1), for this example, Apicurio registry must be made available and accessible from the connector. For this example, we use Apicurio registry's docker image. Assuming docker is locally installed, run the following command.
 
 ```
-$ docker run -it -p 8080:8080 apicurio/apicurio-registry-mem:1.2.3.Final
+$ docker run -it --rm -p 8080:8080 apicurio/apicurio-registry-mem:1.2.3.Final
 exec java -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -javaagent:/opt/agent-bond/agent-bond.jar=jmx_exporter{{9779:/opt/agent-bond/jmx_exporter_config.yml}} -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemor
 ...
 ```
