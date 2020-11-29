@@ -12,7 +12,7 @@ This example is a kubernetes version of example persons1ds.
 
 This description assumes Docker and Kubernetes CLI (`kubectl`) are available on local machine and a Kubernetes cluster is available.
 
-##### Steps 1: Prepare Docker image for kafka-connector-hana
+##### Step 1: Prepare Docker image for kafka-connector-hana
 
 We use the Docker image built in example persons1ds. To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
 
@@ -35,7 +35,7 @@ $
 $ cd ../persons1ks
 ```
 
-##### Steps 2: Prepare Kubernetes cluster for kafka-connector-hana
+##### Step 2: Prepare Kubernetes cluster for kafka-connector-hana
 
 We create a namespace `kafka` for this installation. You are free to use another namespace.
 
@@ -79,10 +79,12 @@ strimzi-cluster-operator-55dd5ccd6f-s5rw6   1/1     Running   0          3m23s
 $ 
 ```
 
-Install Kafka and Zookeeper by applying file `kafka-epemeral-single.yaml` and verify the status.
+##### Step 3: Install Kafka, Zookeeper for kafka-connector-hana
+
+Install Kafka and Zookeeper by applying file `kafka-ephemeral-single.yaml` and verify the status.
 
 ```
-$ kubectl apply -f kafka-epemeral-single.yaml -n kafka
+$ kubectl apply -f kafka-ephemeral-single.yaml -n kafka
 kafka.kafka.strimzi.io/my-cluster created
 $
 $ kubectl get po -n kafka
@@ -100,6 +102,8 @@ my-cluster-zookeeper-client      ClusterIP   10.105.207.47   <none>        2181/
 my-cluster-zookeeper-nodes       ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP   21m
 $
 ```
+
+##### Step 4: Install Kafka-Connect for kafka-connector-hana
 
 Install Kafka connect with the connector by applying file `kafka-connect-hana-min.yaml`.
 
@@ -126,7 +130,7 @@ $
 ```
 
 
-##### Step 2: Prepare the connector configuration files
+##### Step 5: Prepare the connector configuration files
 
 Follow the step for persons1ds to prepare the connector json files.
 
@@ -155,7 +159,7 @@ $
 
 Follow the step in persons1ds to install `connect-hana-source-1.json` and `connect-hana-sink-1.json`.
 
-##### Step 3: Verifying the result (Follow Step 6 of example persions1 and/or persons2)
+##### Step 6: Verifying the result (Follow Step 6 of example persions1 and/or persons2)
 
 You can connect to the Kafka broker pod to directly inspect the topic or verify the target HANA table.
 
@@ -200,7 +204,7 @@ Use `kafka-console-consumer.sh` to fetch some messages.
 ...
 ```
 
-##### Step 4: Shut down
+##### Step 7: Shut down
 
 Use `kubectl delete` to uninstall the resources.
 
@@ -208,7 +212,7 @@ Use `kubectl delete` to uninstall the resources.
 ```
 $ kubectl delete -f kafka-connect-hana-min.yaml -n kafka
 kafkaconnect.kafka.strimzi.io "my-connect-cluster" deleted
-$ kubectl delete -f kafka-epemeral-single.yaml -n kafka 
+$ kubectl delete -f kafka-ephemeral-single.yaml -n kafka 
 kafka.kafka.strimzi.io "my-cluster" deleted
 $ kubectl get svc -n kafka
 No resources found in kafka namespace.
