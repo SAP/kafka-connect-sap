@@ -106,6 +106,7 @@ $
 ##### Step 4: Install Kafka-Connect for kafka-connector-hana
 
 Install Kafka connect with the connector by applying file `kafka-connect-hana-min.yaml`.
+Make sure to adjust the image property value to match the name of the image created in Step 1.
 
 ```
 $ kubectl apply -f kafka-connect-hana-min.yaml -n kafka

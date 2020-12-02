@@ -50,6 +50,7 @@ $
 ```
 
 Install Kafka connect with the connector by applying file `kafka-connect-hana-raga.yaml`.
+Make sure to adjust the image property value to match the name of the image created in Step 1.
 
 ```
 $ kubectl apply -f kafka-connect-hana-rega.yaml
@@ -77,11 +78,25 @@ $
 
 ##### Step 5: Prepare the connector configuration files
 
-Follow the step for persons1ks and persons4ds to prepare the connector json files but make sure the following converter properties are set to use the Avro messages with Apicurio schema registry.
+Follow the step for persons1ks and persons4ds to prepare the connector json files but make sure the following converter properties are set to use the Avro messages with Apicurio schema registry at kubernetes pod address `my-cluster-schema-registry-api:8080`.
 
 ```
 {
     "name": "test-topic-4-source",
+    "config": {
+    ...
+        "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
+        "value.converter.apicurio.registry.url": "http://my-cluster-schema-registry-api:8080/api",
+        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
+        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
+        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+    }
+}
+```
+
+```
+{
+    "name": "test-topic-4-sink",
     "config": {
     ...
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
