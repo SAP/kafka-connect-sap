@@ -65,7 +65,7 @@ $
 
 ##### Step 2: Prepare the connector configuration files
 
-We use connect-distributed.properties stored in directory custom-config for configuring Kafka-Connect. For configuring connectors, prepare the json version of the connector configuration files connect-hana-source-1.json and connect-hana-sink-1.json.
+We use connect-distributed.properties stored in directory custom-config for configuring Kafka-Connect. For configuring connectors, prepare the json version of the connector configuration files connect-hana-source-4.json and connect-hana-sink-4.json.
 
 ##### Step 3: Prepare the source table (Follow Step 4 of example persons1)
 
@@ -77,12 +77,13 @@ Run `docker-compose up` to start the containers.
 
 ```
 $ docker-compose up
-Creating network "persons1ds_default" with the default driver
-Creating persons1ds_zookeeper_1 ... done
-Creating persons1ds_kafka_1     ... done
-Creating persons1ds_connect_1   ... done
-Attaching to persons1ds_zookeeper_1, persons1ds_kafka_1, persons1ds_connect_1
-zookeeper_1  | [2020-09-09 21:59:02,318] INFO Reading configuration from: config/zookeeper.properties (org.apache.zookeeper.server.quorum.QuorumPeerConfig)
+Creating network "persons4ds_default" with the default driver
+Creating persons4ds_zookeeper_1 ... done
+Creating persons4ds_kafka_1     ... done
+Creating persons4ds_registry_1  ... done
+Creating persons4ds_connect_1   ... done
+Attaching to persons4ds_zookeeper_1, persons4ds_kafka_1, persons4ds_registry_1, persons4ds_connect_1
+registry_1   | exec java -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -javaagent:/opt/agent-bond/agent-bond.jar=jmx_exporter{{9779:/opt/agent-bond/jmx_exporter_config.yml}} -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError -cp . -jar /deployments/apicurio-registry-app-1.2.3.Final-runner.jar
 ...
 ```
 
@@ -111,7 +112,35 @@ $
 
 The above result shows that Kafka Connect using Kafka 2.4.1 is running and there is no connector deployed.
 
-We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are the json representation of the property files created for example persons1.
+We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are the json representation of the property files created for example `persons1` but make sure the following converter properties are set to use the Avro messages with Apicurio schema registry at docker container address `registry:8080`.
+
+```
+{
+    "name": "test-topic-4-source",
+    "config": {
+    ...
+        "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
+        "value.converter.apicurio.registry.url": "http://registry:8080/api",
+        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
+        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
+        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+    }
+}
+```
+
+```
+{
+    "name": "test-topic-4-sink",
+    "config": {
+    ...
+        "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
+        "value.converter.apicurio.registry.url": "http://registry:8080/api",
+        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
+        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
+        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+    }
+}
+```
 
 Finally, we deploy the connectors by posting the connector configuration json files to the Kafka Connect's API. Assuming, these json files are already prepared in step 3, use curl to post these files.
 
@@ -121,7 +150,7 @@ HTTP/1.1 201 Created
 Date: Wed, 09 Sep 2020 22:10:34 GMT
 Location: http://localhost:8083/connectors/test-topic-4-source
 Content-Type: application/json
-Content-Length: 399
+Content-Length: 877
 Server: Jetty(9.4.20.v20190813)
 
 {"name":"test-topic-4-source","config":{"connector.class":"com.sap.kafka.connect.source.hana.HANASourceConnector","tasks.max":"1","topics":"test_topic_4","connection.url":"jdbc:sap://...
@@ -131,7 +160,7 @@ HTTP/1.1 201 Created
 Date: Wed, 09 Sep 2020 22:11:22 GMT
 Location: http://localhost:8083/connectors/test-topic-4-sink
 Content-Type: application/json
-Content-Length: 414
+Content-Length: 892
 Server: Jetty(9.4.20.v20190813)
 
 {"name":"test-topic-4-sink","config":{"connector.class":"com.sap.kafka.connect.sink.hana.HANASinkConnector","tasks.max":"1","topics":"test_topic_4","connection.url":"jdbc:sap://...
@@ -167,7 +196,7 @@ Content-Length: 43
 $ 
 ```
 
-It is noted that this scenario builds the Docker image with the apicurio schema registry usage and runs Kafka Connect in the distributed mode. Additional connectors can be deployed to this Kafka Connect instance which use the same distributed-connect.properties configuration.
+It is noted that this scenario builds the Docker image with the apicurio schema registry usage and runs Kafka Connect in the distributed mode. Additional connectors can be deployed to this Kafka Connect instance.
 
 
 ##### Step 6: Shut down

@@ -11,9 +11,20 @@ spec:
   bootstrapServers: my-cluster-kafka-bootstrap:9092
   config:
     group.id: connect-cluster
-    offset.storage.topic: connect-cluster-offsets
-    config.storage.topic: connect-cluster-configs
-    status.storage.topic: connect-cluster-status
+    offset.storage.topic: my-connect-cluster-offsets
+    config.storage.topic: my-connect-cluster-configs
+    status.storage.topic: my-connect-cluster-status
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    key.converter.schemas.enable: true
+    value.converter.schemas.enable: true
     config.storage.replication.factor: 1
     offset.storage.replication.factor: 1
     status.storage.replication.factor: 1
+  logging:
+    type: inline
+    loggers:
+      log4j.rootLogger: "INFO"
+      log4j.logger.com.sap.kafka: "INFO"
+      log4j.logger.org.apache.kafka.connect: "INFO"
+      

@@ -7,6 +7,11 @@
         "connection.url": "jdbc:sap://<host>/",
         "connection.user": "<username>",
         "connection.password": "<password>",
-        "test_topic_4.table.name": "\"<schemaname>\".\"PERSONS4\""
+        "test_topic_4.table.name": "\"<schemaname>\".\"PERSONS4\"",
+        "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
+        "value.converter.apicurio.registry.url": "http://registry:8080/api",
+        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
+        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
+        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
     }
 }
