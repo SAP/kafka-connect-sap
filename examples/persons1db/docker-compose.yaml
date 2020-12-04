@@ -22,6 +22,8 @@ services:
 
   connect:
     image: debezium-connector-hana-min:latest
+    volumes:
+    - ./custom-config:/kafka/custom-config
     depends_on:
     - kafka
     ports:
@@ -31,7 +33,12 @@ services:
     - kafka
     environment:
       BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_CONFIG_PROVIDERS: file
+      CONNECT_CONFIG_PROVIDERS_FILE_CLASS: org.apache.kafka.common.config.provider.FileConfigProvider
       GROUP_ID: 1
       CONFIG_STORAGE_TOPIC: my_connect_configs
       OFFSET_STORAGE_TOPIC: my_connect_offsets
       STATUS_STORAGE_TOPIC: my_connect_statuses
+
+volumes:
+  custom-config:

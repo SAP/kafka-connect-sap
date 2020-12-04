@@ -51,13 +51,9 @@ Successfully tagged strimzi-connector-hana-min:latest
 $
 ```
 
-##### Step 2: Prepare the connector configuration files
+##### Step 2: Prepare the source table (Follow Step 4 of example `persons1`)
 
-We use connect-distributed.properties stored in directory custom-config for configuring Kafka-Connect. For configuring connectors, prepare the json version of the connector configuration files connect-hana-source-1.json and connect-hana-sink-1.json.
-
-##### Step 3: Prepare the source table (Follow Step 4 of example persons1)
-
-##### Step 4: Starting Zookeeper, Kafka, Kafka-Connect
+##### Step 3: Starting Zookeeper, Kafka, Kafka-Connect
 
 The docker-compose.yaml file defines zookeeper, kafka, and connect services. It is noted that Kafka broker uses its advertised host set to `host.docker.internal:9092` assumeing this host name is resolvable from the containers and at the host. This allows Kafka broker to be accessed from the container of Kafka-Connect and from the host for inspection.
 
@@ -98,9 +94,42 @@ $
 
 The above result shows that Kafka Connect using Kafka 2.4.1 is running and there is no connector deployed.
 
-We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are the json representation of the property files created for example persons1.
+##### Step 4: Installing HANA connectors
 
-Finally, we deploy the connectors by posting the connector configuration json files to the Kafka Connect's API. Assuming, these json files are already prepared in step 3, use curl to post these files.
+We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are the json representation of the property files created for example persons1. However, for this distributed example, the user and password values are placed in a separate configuration file `custom-config/hana-secrets.properties` and referenced in the conector json files. Adjust those values accordingly.
+
+```
+{
+    "name": "test-topic-1-source",
+    "config": {
+        "connector.class": "com.sap.kafka.connect.source.hana.HANASourceConnector",
+        "tasks.max": "1",
+        "topics": "test_topic_1",
+        "connection.url": "jdbc:sap://<host>/",
+        "connection.user": "${file:/opt/kafka/custom-config/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/opt/kafka/custom-config/hana-secrets.properties:connection1-password}",
+        "test_topic_1.table.name": "\"<schemaname>\".\"PERSONS1\""
+    }
+}
+```
+
+```
+{
+    "name": "test-topic-1-sink",
+    "config": {
+        "connector.class": "com.sap.kafka.connect.source.hana.HANASourceConnector",
+        "tasks.max": "1",
+        "topics": "test_topic_1",
+        "connection.url": "jdbc:sap://<host>/",
+        "connection.user": "${file:/opt/kafka/custom-config/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/opt/kafka/custom-config/hana-secrets.properties:connection1-password}",
+        "auto.create": "true",
+        "test_topic_1.table.name": "\"<schemaname>\".\"PERSONS1_RES\""
+    }
+}
+```
+
+Finally, we deploy the connectors by posting the connector configuration json files to the Kafka Connect's API using curl.
 
 ```
 $ curl -i -X POST -H 'content-type:application/json' -d @connect-hana-source-1.json http://localhost:8083/connectors
@@ -136,7 +165,7 @@ Server: Jetty(9.4.20.v20190813)
 The above result shows that the connectors are deployed.
 
 
-##### Step 5: Verifying the result (Follow Step 6 of example persions1 and/or persons2)
+##### Step 5: Verifying the result (Follow Step 6 of example `persions1`)
 
 It is noted that this scenario builds the Docker image without schema registry usage and runs Kafka Connect in the distributed mode. Additional connectors can be deployed to this Kafka Connect instance which use the same distributed-connect.properties configuration.
 

@@ -105,7 +105,16 @@ $
 
 ##### Step 4: Install Kafka-Connect for kafka-connector-hana
 
-Install Kafka connect with the connector by applying file `kafka-connect-hana-min.yaml`.
+As the credential for HANA will be read from Kubernetes secret created by `hana-secrets.properties`, set the user and password in this file
+and install `hana-secrets`.
+
+```
+$ kubectl create secret generic hana-secrets --from-file=./hana-secrets.properties -n kafka
+secret/hana-secrets.properties created
+$
+```
+
+Install Kafka connect by applying file `kafka-connect-hana-min.yaml`.
 Make sure to adjust the image property value to match the name of the image created in Step 1.
 
 ```
@@ -131,11 +140,9 @@ $
 ```
 
 
-##### Step 5: Prepare the connector configuration files
+##### Step 5: Installing HANA connectors
 
-Follow the step for persons1ds to prepare the connector json files.
-
-As the above configuration does not expose the external port from Kafka Connect's pod `my-connect-cluster-connect-api`, open another console and add port-forwarding to the local system.
+As the above configuration does not expose the external port from Kafka Connect's pod `my-connect-cluster-connect-api`, open another console and add port-forwarding from the Kafka connect pod to the local system.
 
 ```
 $ kubectl port-forward my-connect-cluster-connect-7bdbdbff64-5k4ms 8083:8083 -n kafka
@@ -144,7 +151,7 @@ Forwarding from [::1]:8083 -> 8083
 ...
 ```
 
-You can verify whether Kafka Connect is running using curl.
+You can verify whether Kafka Connect is running using curl from the local system.
 
 ```
 $ curl -i http://localhost:8083/
@@ -158,11 +165,38 @@ Server: Jetty(9.4.20.v20190813)
 $
 ```
 
-Follow the step in persons1ds to install `connect-hana-source-1.json` and `connect-hana-sink-1.json`.
+We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are similar to the files created for example `persons1ds` but use the diffrent names to refer to the user and password values.
 
-##### Step 6: Verifying the result (Follow Step 6 of example persions1 and/or persons2)
+```
+{
+    "name": "test-topic-1-source",
+    "config": {
+    ...
+        "connection.user": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-password}",
+    ...
+    }
+}
+```
 
-You can connect to the Kafka broker pod to directly inspect the topic or verify the target HANA table.
+```
+{
+    "name": "test-topic-1-sink",
+    "config": {
+    ...
+        "connection.user": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-password}",
+    ...
+    }
+}
+```
+
+Finally, follow the step as in `persons1ds` to install `connect-hana-source-1.json` and `connect-hana-sink-1.json`.
+
+
+##### Step 6: Verifying the result (Follow Step 6 of example `persions1`)
+
+You can connect to the Kafka broker pod to directly inspect the topic and consume messages. Subsequently, you can verify the target HANA table.
 
 ```
 $ kubectl exec -it my-cluster-kafka-0 -n kafka -- bash
