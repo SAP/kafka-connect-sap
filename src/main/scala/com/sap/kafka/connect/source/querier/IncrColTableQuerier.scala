@@ -94,11 +94,12 @@ class IncrColTableQuerier(mode: String, tableOrQuery: String, tablePartition: In
                java.sql.Types.VARCHAR | java.sql.Types.NVARCHAR | java.sql.Types.CHAR | java.sql.Types.NCHAR =>
             incrColumnType = metaAttr.dataType
             return metaAttr.name
+          case _ => throw new IllegalArgumentException(s"The Incrementing column $incrementingCol is of unsupported type $metaAttr.dataType")
         }
       }
     })
-    throw new IllegalArgumentException("The Incrementing column is not found in the " +
-      "table or is not of supported type")
+    // no matching
+    throw new IllegalArgumentException("The Incrementing column is not found in the table")
   }
 
   /**
