@@ -36,9 +36,13 @@ $
 $ cd ../persons4ks
 ```
 
-##### Steps 2, 3: Follow steps 2 and 3 of persons1ks
+##### Step 2: Prepare Kubernetes cluster for kafka-connector-hana
 
-##### Step 4: Install Apicurio Schema-Registry and Kafka-Connect for kafka-connector-hana
+Follow step 2 of `persons1ks`
+
+##### Step 3: Install Kafka, Zookeeper, Apicurio Schema-Registry for kafka-connector-hana
+
+Follow step 3o of `persons1ks` to install Kafka and Zookeeper.
 
 Install Apicurio Schema-Registry by applying file `apicurio-registry.yaml`.
 
@@ -49,7 +53,11 @@ service/my-cluster-schema-registry-api created
 $
 ```
 
-Install Kafka connect with the connector by applying file `kafka-connect-hana-raga.yaml`.
+##### Step 4: Kafka-Connect for kafka-connector-hana
+
+Follow step 4 of `persons1ks` to install the credential for HANA.
+
+Install Kafka connect by applying file `kafka-connect-hana-raga.yaml`.
 Make sure to adjust the image property value to match the name of the image created in Step 1.
 
 ```
@@ -76,14 +84,19 @@ my-connect-cluster-connect-api   ClusterIP   10.103.61.217    <none>        8083
 $
 ```
 
-##### Step 5: Prepare the connector configuration files
+##### Step 5: Installing HANA connectors
 
-Follow the step for persons1ks and persons4ds to prepare the connector json files but make sure the following converter properties are set to use the Avro messages with Apicurio schema registry at kubernetes pod address `my-cluster-schema-registry-api:8080`.
+Follow step 5 of `persons1ks` to configure port-forwarding and verify Kafka Connect is running.
+
+We prepare for the connector json files `connect-hana-source-4.json` and `connect-hana-sink-4.json` which are similar to the files created for example `persons4ds` but use the different registry address  `my-cluster-schema-registry-api:8080`.
 
 ```
 {
     "name": "test-topic-4-source",
     "config": {
+    ...
+        "connection.user": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-password}",
     ...
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
         "value.converter.apicurio.registry.url": "http://my-cluster-schema-registry-api:8080/api",
@@ -99,6 +112,9 @@ Follow the step for persons1ks and persons4ds to prepare the connector json file
     "name": "test-topic-4-sink",
     "config": {
     ...
+        "connection.user": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-password}",
+    ...
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
         "value.converter.apicurio.registry.url": "http://my-cluster-schema-registry-api:8080/api",
         "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
@@ -108,7 +124,7 @@ Follow the step for persons1ks and persons4ds to prepare the connector json file
 }
 ```
 
-##### Step 6: Verifying the result (Follow Step 6 of example persions1 and/or persons2)
+##### Step 6: Verifying the result (Follow Step 6 of example `persions1`)
 
 You can connect to the Kafka broker pod to directly inspect the topic or verify the target HANA table.
 

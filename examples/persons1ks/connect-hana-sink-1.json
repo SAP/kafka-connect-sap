@@ -5,8 +5,8 @@
         "tasks.max": "1",
         "topics": "test_topic_1",
         "connection.url": "jdbc:sap://<host>/",
-        "connection.user": "${file:/opt/kafka/custom-config/hana-secrets.properties:connection1-user}",
-        "connection.password": "${file:/opt/kafka/custom-config/hana-secrets.properties:connection1-password}",
+        "connection.user": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-password}",
         "auto.create": "true",
         "test_topic_1.table.name": "\"<schemaname>\".\"PERSONS1_RES\""
     }

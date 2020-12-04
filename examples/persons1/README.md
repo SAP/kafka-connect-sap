@@ -68,7 +68,7 @@ $ cp $KAFKA_CONNECT_SAP/config/connect-hana-source-1.properties $KAFKA_HOME/conf
 $
 ```
 
-This source connector configuration file assumes that records are read from HANA table `PERSONS1` and stored into Kafka topics `test_topic_1`. We complete the configuration by setting the `url`, `username`, and `password` values for the HANA connection as well as the table's `schemaname`.
+This source connector configuration file assumes that records are read from HANA table `PERSONS1` and stored into Kafka topics `test_topic_1`. We complete the configuration by setting the `url`, `username`, and `password` values for the HANA connection as well as the table's `schemaname`. In this configuration, the connection user and password are provided in the connector configuration file. To externalize these values, use `ConfigProvider`. 
 
 ```
 #

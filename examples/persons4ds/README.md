@@ -63,13 +63,9 @@ Successfully tagged strimzi-connector-hana-min:latest
 $
 ```
 
-##### Step 2: Prepare the connector configuration files
+##### Step 2: Prepare the source table (Follow Step 4 of example `persons1`)
 
-We use connect-distributed.properties stored in directory custom-config for configuring Kafka-Connect. For configuring connectors, prepare the json version of the connector configuration files connect-hana-source-4.json and connect-hana-sink-4.json.
-
-##### Step 3: Prepare the source table (Follow Step 4 of example persons1)
-
-##### Step 4: Starting Zookeeper, Kafka, Kafka-Coonnect
+##### Step 3: Starting Zookeeper, Kafka, Kafka-Coonnect
 
 The docker-compose.yaml file defines zookeeper, kafka, and connect services. It is noted that Kafka broker uses its advertised host set to `host.docker.internal:9092` assumeing this host name is resolvable from the containers and at the host. This allows Kafka broker to be accessed from the container of Kafka-Connect and from the host for inspection.
 
@@ -112,7 +108,9 @@ $
 
 The above result shows that Kafka Connect using Kafka 2.4.1 is running and there is no connector deployed.
 
-We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are the json representation of the property files created for example `persons1` but make sure the following converter properties are set to use the Avro messages with Apicurio schema registry at docker container address `registry:8080`.
+##### Step 4: Installing HANA connectors
+
+We prepare for the connector json files using the json files `connect-hana-source-4.json` and `connect-hana-sink-4.json` which are similar to the files created for example `persons1ds` but include the following converter properties to use Apicurio schema registry at docker container address `registry:8080`.
 
 ```
 {
@@ -142,7 +140,7 @@ We prepare for the connector json files using the json files `connect-hana-sourc
 }
 ```
 
-Finally, we deploy the connectors by posting the connector configuration json files to the Kafka Connect's API. Assuming, these json files are already prepared in step 3, use curl to post these files.
+Finally, we deploy the connectors by posting the connector configuration json files to the Kafka Connect's API using curl.
 
 ```
 $ curl -i -X POST -H 'content-type:application/json' -d @connect-hana-source-4.json http://localhost:8083/connectors
@@ -178,7 +176,7 @@ Server: Jetty(9.4.20.v20190813)
 The above result shows that the connectors are deployed.
 
 
-##### Step 5: Verifying the result (Follow Step 6 of example persons4)
+##### Step 5: Verifying the result (Follow Step 6 of example `persons4`)
 
 In addition to inspecting Kafka topic and HANA table, you can verify the registered schema at the schema registry using the following command.
 
