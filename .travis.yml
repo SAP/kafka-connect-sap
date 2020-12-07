@@ -1,12 +1,10 @@
 dist: xenial
-language: scala
-
-scala:
-  - 2.12.11
-
+language: java
 jobs:
   fast_finish: true
   include:
   - os: linux
     jdk: openjdk8
-
+cache:
+  directories:
+  - $HOME/.m2

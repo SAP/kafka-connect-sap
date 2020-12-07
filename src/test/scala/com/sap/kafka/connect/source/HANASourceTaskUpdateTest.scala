@@ -386,9 +386,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
   java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "incrementing")
@@ -405,9 +403,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
   java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "incrementing")

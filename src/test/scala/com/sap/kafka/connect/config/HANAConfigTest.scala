@@ -7,13 +7,14 @@ import com.sap.kafka.connect.config.hana.HANAParameters
 import org.scalatest.FunSuite
 
 class HANAConfigTest extends FunSuite {
+  val TEST_CONNECTION_URL = "jdbc:h2:mem:test;INIT=CREATE SCHEMA IF NOT EXISTS TEST"
+
   test("minimum config for sink") {
     val props = new util.HashMap[String, String]()
     props.put("name", "test-sink")
     props.put("connector.class", "com.sap.kafka.connect.sink.HANASinkConnector")
     props.put("tasks.max", "1")
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "test-topic")
@@ -35,8 +36,7 @@ class HANAConfigTest extends FunSuite {
     props.put("name", "test-source")
     props.put("connector.class", "com.sap.kafka.connect.source.HANASourceConnector")
     props.put("tasks.max", "1")
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "test-topic")
@@ -72,8 +72,7 @@ class HANAConfigTest extends FunSuite {
     props.put("name", "test-source")
     props.put("connector.class", "com.sap.kafka.connect.source.HANASourceConnector")
     props.put("tasks.max", "1")
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.password", "sa")
     props.put("topics", "test-topic")
     props.put("test-topic.table.name", "\"TEST\".\"TABLE\"")
@@ -87,8 +86,7 @@ class HANAConfigTest extends FunSuite {
     props.put("name", "test-source")
     props.put("connector.class", "com.sap.kafka.connect.source.HANASourceConnector")
     props.put("tasks.max", "1")
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("test-topic.table.name", "\"TEST\".\"TABLE\"")
@@ -104,8 +102,7 @@ class HANAConfigTest extends FunSuite {
     props.put("name", "test-sink")
     props.put("connector.class", "com.sap.kafka.connect.sink.HANASinkConnector")
     props.put("tasks.max", "1")
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "test-topic")
@@ -122,8 +119,7 @@ class HANAConfigTest extends FunSuite {
     props.put("name", "test-source")
     props.put("connector.class", "com.sap.kafka.connect.source.HANASourceConnector")
     props.put("tasks.max", "1")
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "test-topic")

@@ -16,6 +16,7 @@ import org.mockito.Mockito.mock
 import scala.math.BigDecimal.RoundingMode
 
 class AvroLogicalTypesTest extends FunSuite {
+  val TEST_CONNECTION_URL = "jdbc:h2:mem:test;INIT=CREATE SCHEMA IF NOT EXISTS TEST"
 
   test("put propagates to DB with schema containing date fields") {
     val schema = SchemaBuilder.struct()
@@ -23,8 +24,7 @@ class AvroLogicalTypesTest extends FunSuite {
       .build()
 
     val props = new util.HashMap[String, String]()
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "testTopic")
@@ -79,8 +79,7 @@ class AvroLogicalTypesTest extends FunSuite {
       .build()
 
     val props = new util.HashMap[String, String]()
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "testTopic")
@@ -136,8 +135,7 @@ class AvroLogicalTypesTest extends FunSuite {
       .build()
 
     val props = new util.HashMap[String, String]()
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "testTopic")
@@ -193,8 +191,7 @@ class AvroLogicalTypesTest extends FunSuite {
       .build()
 
     val props = new util.HashMap[String, String]()
-    props.put("connection.url", "jdbc:h2:mem:test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("topics", "testTopic")

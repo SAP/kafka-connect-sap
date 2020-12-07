@@ -17,6 +17,9 @@ import org.mockito.ArgumentMatchers.any
 
 class HANASourceTaskTestBase extends FunSuite
                               with BeforeAndAfterAll {
+  val tmpdir = System.getProperty("java.io.tmpdir")
+  protected val TEST_CONNECTION_URL= s"jdbc:h2:file:$tmpdir/test;INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1"
+
   protected val SINGLE_TABLE_NAME_FOR_BULK_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE\""
   protected val SINGLE_TABLE_NAME_FOR_BULK_QUERY_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_QUERY\""
 
@@ -111,9 +114,7 @@ class HANASourceTaskTestBase extends FunSuite
   protected def singleTableConfig(): java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "bulk")
@@ -128,9 +129,7 @@ class HANASourceTaskTestBase extends FunSuite
   protected def multiTableConfig(): java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "bulk")
@@ -150,9 +149,7 @@ class HANASourceTaskTestBase extends FunSuite
   protected def singleTableQueryConfig(): java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    props.put("connection.url", "jdbc:h2:file:" + tmpDir + "test;" +
-      "INIT=CREATE SCHEMA IF NOT EXISTS TEST;DB_CLOSE_DELAY=-1")
+    props.put("connection.url", TEST_CONNECTION_URL)
     props.put("connection.user", "sa")
     props.put("connection.password", "sa")
     props.put("mode", "bulk")
