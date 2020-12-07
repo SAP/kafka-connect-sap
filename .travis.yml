@@ -1,0 +1,12 @@
+dist: xenial
+language: scala
+
+scala:
+  - 2.12.11
+
+jobs:
+  fast_finish: true
+  include:
+  - os: linux
+    jdk: openjdk8
+
