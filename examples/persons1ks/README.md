@@ -6,7 +6,7 @@ This example is a kubernetes version of example persons1ds.
 
 - example persons1ds is built
 - Access to HANA
-- Kubernetes
+- Kubernetes(with [Minikube](minikube.md))
 
 #### Running
 
@@ -16,7 +16,7 @@ This description assumes Docker and Kubernetes CLI (`kubectl`) are available on 
 
 We use the Docker image built in example persons1ds. To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
 
-Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `kubernetes.docker.internal:5000` when using a local registry with Docker Desktop) 
+Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `kubernetes.docker.internal:5000` when using a local registry with Docker Desktop, `docker.io/<username>` for Docker Hub) 
 
 ```
 $ cd ../persons1ds
