@@ -1,6 +1,6 @@
 ### Example persons1ds: kafka-hana-connect using strimzi kafka images with docker-compose
 
-This example is a distributed version of example persons1 using strimizi kafka docker images.
+This example is a distributed version of example [persons1](../persons1/README.md) using strimizi kafka docker images.
 
 #### Prerequisites
 
@@ -51,7 +51,7 @@ Successfully tagged strimzi-connector-hana-min:latest
 $
 ```
 
-##### Step 2: Prepare the source table (Follow Step 4 of example `persons1`)
+##### Step 2: Prepare the source table (Follow Step 4 of example [persons1](../persons1/README.md))
 
 ##### Step 3: Starting Zookeeper, Kafka, Kafka-Connect
 
@@ -96,7 +96,7 @@ The above result shows that Kafka Connect using Kafka 2.4.1 is running and there
 
 ##### Step 4: Installing HANA connectors
 
-We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are the json representation of the property files created for example persons1. However, for this distributed example, the user and password values are placed in a separate configuration file `custom-config/hana-secrets.properties` and referenced in the conector json files. Adjust those values accordingly.
+We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are the json representation of the property files created for example [persons1](../persons1/README.md). However, for this distributed example, the user and password values are placed in a separate configuration file `custom-config/hana-secrets.properties` and referenced in the conector json files. Adjust those values accordingly.
 
 ```
 {
@@ -165,7 +165,7 @@ Server: Jetty(9.4.20.v20190813)
 The above result shows that the connectors are deployed.
 
 
-##### Step 5: Verifying the result (Follow Step 6 of example `persions1`)
+##### Step 5: Verifying the result (Follow Step 6 of example [persions1](../persions1/README.md))
 
 It is noted that this scenario builds the Docker image without schema registry usage and runs Kafka Connect in the distributed mode. Additional connectors can be deployed to this Kafka Connect instance which use the same distributed-connect.properties configuration.
 

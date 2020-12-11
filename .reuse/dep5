@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Kafka Connect SAP
+Source: https://github.com/SAP/kafka-connect-sap
+
+Files: *
+Copyright: 2020 SAP SE or an SAP affiliate company and Kafka Connect SAP contributors
+License: Apache-2.0

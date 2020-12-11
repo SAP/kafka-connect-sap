@@ -1,20 +1,20 @@
 ### Example persons4: standalone incremental-mode HANA-Connectors using Schema Registry (apicurio-registry)
 
-This example is similar to example [persons3(../persons3) but example persons4 uses Avro messages and stores schemas in Apicurio registry. For using JSON messages with Apicurio registry, see example [persons3](../persons3).
+This example is similar to example [persons3(../persons3/README.md) but example persons4 uses Avro messages and stores schemas in Apicurio registry. For using JSON messages with Apicurio registry, see example [persons3](../persons3/README.md).
 
 #### Prerequisites
 
 - This project is built (or its jar file is available)
 - Local Kafka installation
 - Access to HANA
-- Understanding of example [persons2](../persons2)
+- Understanding of example [persons2](../persons2/README.md)
 
 #### Running
 
 This description assumes Kafka 2.4.1 is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
 
 
-##### Steps 1-2: Follow Steps 1 and 2 of [persons3 example](../person3).
+##### Steps 1-2: Follow Steps 1 and 2 of [persons3 example](../persons3/README.md).
 
 - start Kafka
 - install kafka-connector-hana
@@ -41,7 +41,7 @@ value.converter.apicurio.registry.converter.deserializer=io.apicurio.registry.ut
 value.converter.apicurio.registry.global-id=io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy
 ```
 
-For the source and sink configuraiton, we modify the configuration for persons2.
+For the source and sink configuraiton, we modify the configuration for [persons2](../persons2/README.md).
 
 ```
 $ cp $KAFKA_CONNECT_SAP/config/connect-hana-source-2.properties $KAFKA_HOME/config/connect-hana-source-4.properties

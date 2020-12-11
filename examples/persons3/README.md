@@ -1,27 +1,27 @@
 ### Example persons3: standalone incremental-mode HANA-Connectors using Schema Registry (apicurio-registry)
 
-This example is similar to example [persons2](../persons2) but example persons3 uses a schema registry to store the schema in the registry instead of including the schema physically in every message. This example uses JSON messages and stores schemas in Apicurio registry. For using Avro messages with Apicurio registry, see example [persons4](../persons4).
+This example is similar to example [persons2](../persons2/README.md) but example persons3 uses a schema registry to store the schema in the registry instead of including the schema physically in every message. This example uses JSON messages and stores schemas in Apicurio registry. For using Avro messages with Apicurio registry, see example [persons4](../persons4/README.md).
 
 #### Prerequisites
 
 - This project is built (or its jar file is available)
 - Local Kafka installation
 - Access to HANA
-- Understanding of example [persons2](../persons2)
+- Understanding of example [persons2](../persons2/README.md)
 
 #### Running
 
 This description assumes Kafka 2.4.1 is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
 
 
-##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../person1).
+##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../person1/README.md).
 
 - start Kafka
 - install kafka-connector-hana
 
 ###### Start Apicurio registry
 
-In addition to the above steps described in example [persons1](../persons1), for this example, Apicurio registry must be made available and accessible from the connector. For this example, we use Apicurio registry's docker image. Assuming docker is locally installed, run the following command.
+In addition to the above steps described in example [persons1](../persons1/README.md), for this example, Apicurio registry must be made available and accessible from the connector. For this example, we use Apicurio registry's docker image. Assuming docker is locally installed, run the following command.
 
 ```
 $ docker run -it --rm -p 8080:8080 apicurio/apicurio-registry-mem:1.2.3.Final
@@ -84,7 +84,8 @@ In order to use Apicurio registry, its client libraries must be placed in the co
 
 
 ```
-$ mvn install
+$ make get_libs
+Getting jar files into target ...
 ...
 $
 $ ls target
@@ -128,7 +129,7 @@ value.converter.apicurio.registry.url=http://localhost:8080/api
 value.converter.apicurio.registry.global-id=io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy
 ```
 
-For the source and sink configuraiton, we modify the configuration for persons2.
+For the source and sink configuraiton, we modify the configuration for [persons2](../persons2/README.md).
 
 ```
 $ cp $KAFKA_CONNECT_SAP/config/connect-hana-source-2.properties $KAFKA_HOME/config/connect-hana-source-3.properties

@@ -1,6 +1,6 @@
 ### Example persons4ks: kafka-hana-connect using strimzi kafka images in kubernetes
 
-This example is a kubernetes version of example persons4ds.
+This example is a kubernetes version of example [persons4ds](../persons4ds/README.md).
 
 #### Prerequisites
 
@@ -14,7 +14,7 @@ This description assumes Docker and Kubernetes CLI (`kubectl`) are available on 
 
 ##### Step 1: Prepare Docker image for kafka-connector-hana
 
-We use the Docker image built in example persons1ds. To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
+We use the Docker image built in example [persons1ds](../persons1ds/README.md). To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
 
 Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `kubernetes.docker.internal:5000` when using a local registry with Docker Desktop) 
 
@@ -38,11 +38,11 @@ $ cd ../persons4ks
 
 ##### Step 2: Prepare Kubernetes cluster for kafka-connector-hana
 
-Follow step 2 of `persons1ks`
+Follow step 2 of [persons1ks](../persons1ks/README.md)
 
 ##### Step 3: Install Kafka, Zookeeper, Apicurio Schema-Registry for kafka-connector-hana
 
-Follow step 3o of `persons1ks` to install Kafka and Zookeeper.
+Follow step 3o of [persons1ks](../persons1ks/README.md) to install Kafka and Zookeeper.
 
 Install Apicurio Schema-Registry by applying file `apicurio-registry.yaml`.
 
@@ -55,7 +55,7 @@ $
 
 ##### Step 4: Kafka-Connect for kafka-connector-hana
 
-Follow step 4 of `persons1ks` to install the credential for HANA.
+Follow step 4 of [persons1ks](../persons1ks/README.md) to install the credential for HANA.
 
 Install Kafka connect by applying file `kafka-connect-hana-raga.yaml`.
 Make sure to adjust the image property value to match the name of the image created in Step 1.
@@ -86,9 +86,9 @@ $
 
 ##### Step 5: Installing HANA connectors
 
-Follow step 5 of `persons1ks` to configure port-forwarding and verify Kafka Connect is running.
+Follow step 5 of [persons1ks](../persons1ks/README.md) to configure port-forwarding and verify Kafka Connect is running.
 
-We prepare for the connector json files `connect-hana-source-4.json` and `connect-hana-sink-4.json` which are similar to the files created for example `persons4ds` but use the different registry address  `my-cluster-schema-registry-api:8080`.
+We prepare for the connector json files `connect-hana-source-4.json` and `connect-hana-sink-4.json` which are similar to the files created for example [persons4ds](../persons4ds/README.md) but use the different registry address  `my-cluster-schema-registry-api:8080`.
 
 ```
 {
@@ -124,7 +124,7 @@ We prepare for the connector json files `connect-hana-source-4.json` and `connec
 }
 ```
 
-##### Step 6: Verifying the result (Follow Step 6 of example `persions1`)
+##### Step 6: Verifying the result (Follow Step 6 of example [persions1](../persons1/README.md))
 
 You can connect to the Kafka broker pod to directly inspect the topic or verify the target HANA table.
 

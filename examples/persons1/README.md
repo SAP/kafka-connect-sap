@@ -37,10 +37,11 @@ $ mkdir -p $KAFKA_HOME/plugins/kafka-connector-hana
 $
 ```
 
-Assuming this project has been built (see Building), run `mvn install` to place the required jar files including the HANA jdbc driver into directory 'target'.
+Assuming this project has been built (see Building), run `make get_libs` to place the required jar files including the HANA jdbc driver into directory 'target'.
 
 ```
-$ mvn install
+$ make get_libs
+Getting jar files into target ...
 ...
 $ ls target
 kafka-connector-hana-1.0.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
@@ -164,5 +165,5 @@ PERSONID  LASTNAME  FIRSTNAME
 ...
 ```
 
-It is noted that this scenario uses the batch mode. As a result, the records will be read periodically from the source table and inserted into the sink table multiple times. For the non-batch mode, which is called the incremental mode, see [person2 example](../persons2).
+It is noted that this scenario uses the batch mode. As a result, the records will be read periodically from the source table and inserted into the sink table multiple times. For the non-batch mode, which is called the incremental mode, see [persons2 example](../persons2/README.md).
 

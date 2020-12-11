@@ -13,7 +13,7 @@ This example shows an incremental-mode record transfer between Kafka and HANA us
 This description assumes Kafka 2.4.1 is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
 
 
-##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../persons1).
+##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../persons1/README.md).
 
 - start Kafka
 - install kafka-connector-hana
