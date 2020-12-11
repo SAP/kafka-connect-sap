@@ -1,6 +1,6 @@
 ### Example persons1ks: kafka-hana-connect using strimzi kafka images in kubernetes
 
-This example is a kubernetes version of example persons1ds.
+This example is a kubernetes version of example [persons1ds](../persons1ds/README.md).
 
 #### Prerequisites
 
@@ -14,7 +14,7 @@ This description assumes Docker and Kubernetes CLI (`kubectl`) are available on 
 
 ##### Step 1: Prepare Docker image for kafka-connector-hana
 
-We use the Docker image built in example persons1ds. To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
+We use the Docker image built in example [persons1ds](../persons1ds/README.md). To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
 
 Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `kubernetes.docker.internal:5000` when using a local registry with Docker Desktop, `docker.io/<username>` for Docker Hub) 
 
@@ -165,7 +165,7 @@ Server: Jetty(9.4.20.v20190813)
 $
 ```
 
-We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are similar to the files created for example `persons1ds` but use the diffrent names to refer to the user and password values.
+We prepare for the connector json files using the json files `connect-hana-source-1.json` and `connect-hana-sink-1.json` which are similar to the files created for example [persons1ds](../persons1ds/README.md) but use the diffrent names to refer to the user and password values.
 
 ```
 {
@@ -191,10 +191,10 @@ We prepare for the connector json files using the json files `connect-hana-sourc
 }
 ```
 
-Finally, follow the step as in `persons1ds` to install `connect-hana-source-1.json` and `connect-hana-sink-1.json`.
+Finally, follow the step as in [persons1ds](../persons1ds/README.md) to install `connect-hana-source-1.json` and `connect-hana-sink-1.json`.
 
 
-##### Step 6: Verifying the result (Follow Step 6 of example `persions1`)
+##### Step 6: Verifying the result (Follow Step 6 of example [persions1](../persons1/README.md))
 
 You can connect to the Kafka broker pod to directly inspect the topic and consume messages. Subsequently, you can verify the target HANA table.
 

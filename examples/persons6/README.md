@@ -1,6 +1,6 @@
 ### Example persons6: standalone incremental-mode HANA-Connectors using Schema Registry (confluent-registry)
 
-This example is similar to example [persons2](../persons2) but example persons6 uses a schema registry to store the schema in the registry instead of including the schema physically in every message. This example uses Avro messages and stores schemas in Confluent registry. For using Apicurio registry, see example [persons4](../persons4).
+This example is similar to example [persons2](../persons2/README.md) but example persons6 uses a schema registry to store the schema in the registry instead of including the schema physically in every message. This example uses Avro messages and stores schemas in Confluent registry. For using Apicurio registry, see example [persons4](../persons4/README.md).
 
 #### Prerequisites
 
@@ -8,21 +8,21 @@ This example is similar to example [persons2](../persons2) but example persons6 
 - Local Kafka installation
 - Access to Conluent schema registry
 - Access to HANA
-- Understanding of example [persons2](../persons2)
+- Understanding of example [persons2](../persons2/README.md)
 
 #### Running
 
 This description assumes Kafka 2.4.1 is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
 
 
-##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../person1).
+##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../persons1/README.md).
 
 - start Kafka
 - install kafka-connector-hana
 
 ###### Start Confluent registry
 
-In addition to the above steps described in example [persons1](../persons1), for this example, Confluent registry must be made available and accessible from the connector. For this example, we use Confluent registry's docker image. Assuming docker is locally installed and hostname `host.docker.internal` is resolved to the internal IP address used by the host, run the following command.
+In addition to the above steps described in example [persons1](../persons1/README.md), for this example, Confluent registry must be made available and accessible from the connector. For this example, we use Confluent registry's docker image. Assuming docker is locally installed and hostname `host.docker.internal` is resolved to the internal IP address used by the host, run the following command.
 
 ```
 $ docker run --name confluent-schema-registry -p 8081:8081 -e SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=host.docker.internal:9092 -e SCHEMA_REGISTRY_HOST_NAME=localhost confluentinc/cp-schema-registry  
@@ -82,7 +82,7 @@ value.converter=io.confluent.connect.avro.AvroConverter
 value.converter.schema.registry.url=http://localhost:8081
 ```
 
-For the source and sink configuraiton, we modify the configuration for persons2.
+For the source and sink configuraiton, we modify the configuration for [persons2](../persons2/README.md).
 
 ```
 $ cp $KAFKA_CONNECT_SAP/config/connect-hana-source-2.properties $KAFKA_HOME/config/connect-hana-source-3.properties

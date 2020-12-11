@@ -1,6 +1,6 @@
 ### Example persons4ds: kafka-hana-connect using strimzi kafka images with docker-compose
 
-This example is a distributed version of example persons4 using strimizi kafka docker images.
+This example is a distributed version of example [persons4](../persons4/README.md) using strimizi kafka docker images.
 
 #### Prerequisites
 
@@ -63,7 +63,7 @@ Successfully tagged strimzi-connector-hana-min:latest
 $
 ```
 
-##### Step 2: Prepare the source table (Follow Step 4 of example `persons1`)
+##### Step 2: Prepare the source table (Follow Step 4 of example [persons1](../persons1/README.md))
 
 ##### Step 3: Starting Zookeeper, Kafka, Kafka-Coonnect
 
