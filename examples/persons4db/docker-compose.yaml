@@ -18,8 +18,15 @@ services:
       LISTENERS: PLAINTEXT://0.0.0.0:9092
       ZOOKEEPER_CONNECT: zookeeper:2181
 
+  registry:
+    image: apicurio/apicurio-registry-mem:1.2.3.Final
+    depends_on:
+    - kafka
+    ports:
+    - "8080:8080"
+    
   connect:
-    image: debezium-connector-hana-min:latest
+    image: debezium-connector-hana-rega:latest
     volumes:
     - ./custom-config:/kafka/custom-config
     depends_on:

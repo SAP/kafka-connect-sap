@@ -1,0 +1,17 @@
+{
+    "name": "test-topic-4-source",
+    "config": {
+        "connector.class": "com.sap.kafka.connect.source.hana.HANASourceConnector",
+        "tasks.max": "1",
+        "topics": "test_topic_4",
+        "connection.url": "jdbc:sap://<host>/",
+        "connection.user": "${file:/kafka/custom-config/hana-secrets.properties:connection1-user}",
+        "connection.password": "${file:/kafka/custom-config/hana-secrets.properties:connection1-password}",
+        "test_topic_4.table.name": "\"<schemaname>\".\"PERSONS4\"",
+        "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
+        "value.converter.apicurio.registry.url": "http://registry:8080/api",
+        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
+        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
+        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+    }
+}
