@@ -11,7 +11,7 @@ import com.sap.kafka.connect.sink.BaseWriter
 import org.apache.kafka.connect.sink.SinkRecord
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 
 class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
@@ -39,9 +39,9 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
 
     val topicMap = Multimaps.index(records, new Function[SinkRecord, String] {
       override def apply(sinkRecord: SinkRecord) = sinkRecord.topic()
-    }).asMap().toMap
+    }).asMap()
 
-    for ((topic, recordsPerTopic) <- topicMap) {
+    for ((topic, recordsPerTopic) <- topicMap.asScala) {
       var table = config.topicProperties(topic).get("table.name").get
       if (table.contains("${topic}")) {
         table = table.replace("${topic}", topic)
@@ -53,12 +53,12 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
         case None =>
           val tableRecordsCollector = new HANASinkRecordsCollector(table, hanaClient, connection, config)
           tableCache.put(table, tableRecordsCollector)
-          tableRecordsCollector.add(recordsPerTopic.toSeq)
+          tableRecordsCollector.add(collectionAsScalaIterableConverter(recordsPerTopic).asScala.toSeq)
         case Some(tableRecordsCollector) =>
           if (config.autoSchemaUpdateOn) {
             tableRecordsCollector.tableConfigInitialized = false
           }
-          tableRecordsCollector.add(recordsPerTopic.toSeq)
+          tableRecordsCollector.add(collectionAsScalaIterableConverter(recordsPerTopic).asScala.toSeq)
       }
     }
     flush(tableCache.toMap)

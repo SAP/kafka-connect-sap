@@ -26,7 +26,7 @@ and use the following command.
 mvn clean install -DskipTests
 ```
 
-which should produce the Kafka Connector jar file `kafka-connect-hana-n.n.jar` in the `target` folder, where `n.n` corresponds to the current version.
+which should produce the Kafka Connector jar file `kafka-connector-hana_m-n.jar` in the `modules/scala_m/target` folder, where `m` corresponds to Scala binary version and `n` corresponds to the connector version.
 
 **Include the Jdbc Jar**
 

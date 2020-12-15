@@ -4,7 +4,8 @@ import com.sap.kafka.client.MetaSchema
 import org.apache.kafka.connect.data._
 import org.apache.kafka.connect.data.Schema.Type
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 trait GenericSchemaBuilder {
 
@@ -50,10 +51,9 @@ trait GenericSchemaBuilder {
   private def getLogicalTypeFromFieldSchema(fieldSchema: Schema): String = {
     val logicalType = fieldSchema.name()
 
-    var parameters = Map[String, String]()
-
-    if (fieldSchema.parameters() != null) {
-      parameters = fieldSchema.parameters().toMap
+    val parameters = fieldSchema.parameters match {
+      case null => Map[String, String]()
+      case _ => fieldSchema.parameters().asScala
     }
 
     logicalType match {

@@ -5,6 +5,7 @@
     <groupId>com.sap.kafka.connect</groupId>
     <artifactId>kafka-connector-hana</artifactId>
     <version>0.9.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <scm>
         <connection>scm:git:git://github.com/SAP/kafka-connect-sap.git</connection>
@@ -31,8 +32,6 @@
         <guava.version>29.0-jre</guava.version>
         <mockito-core.version>3.6.0</mockito-core.version>
         <kafka.version>2.4.1</kafka.version>
-        <scala.version>2.12.11</scala.version>
-        <scala.binary.version>2.12</scala.binary.version>
         <scalatest.version>3.1.2</scalatest.version>
         <slf4j.version>1.7.21</slf4j.version>
     </properties>
@@ -46,20 +45,8 @@
     </repositories>
 
     <dependencies>
-        <!-- scala dependency -->
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
 
-        <!-- kafka dependency -->
-        <!-- switch to ${kafka.version} for using a stable release -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_${scala.binary.version}</artifactId>
-            <version>${kafka.version}</version>
-        </dependency>
+        <!-- kafka connect dependency -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
@@ -94,12 +81,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
@@ -107,18 +88,18 @@
         </dependency>
     </dependencies>
     <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <sourceDirectory>../../src/main/scala</sourceDirectory>
+        <testSourceDirectory>../../src/test/scala</testSourceDirectory>
         <testResources>
             <testResource>
-                <directory>src/test/resources</directory>
+                <directory>../../src/test/resources</directory>
                 <filtering>true</filtering>
                 <includes>
                     <include>**/*.properties</include>
                 </includes>
             </testResource>
             <testResource>
-                <directory>src/test/resources</directory>
+                <directory>../../src/test/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>**/*.properties</exclude>
@@ -142,7 +123,7 @@
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <args>
-                        <arg>-target:jvm-1.5</arg>
+                        <arg>-target:jvm-1.8</arg>
                     </args>
                 </configuration>
             </plugin>
@@ -158,29 +139,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- maven shade plugin to bundle the jdbc driver -->
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.google.protobuf:protobuf-java</include>
-                                    <include>com.sap.hl.jdbc:hl-jdbc</include>
-                                    <include>com.ecwid.consul:consul-api</include>
-                                </includes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
 
             <!-- disable surefire -->
             <plugin>
@@ -191,45 +149,13 @@
                     <skipTests>true</skipTests>
                 </configuration>
             </plugin>
-            <!-- enable scalatest -->
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0</version>
-                <configuration>
-                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                    <junitxml>.</junitxml>
-                    <filereports>TestSuite.txt</filereports>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>assembly/examples.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>create-archive</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
+    <modules>
+        <module>modules/scala_2.12</module>
+        <module>modules/scala_2.13</module>
+        <module>examples</module>
+    </modules>
     <profiles>
         <profile>
             <id>release</id>

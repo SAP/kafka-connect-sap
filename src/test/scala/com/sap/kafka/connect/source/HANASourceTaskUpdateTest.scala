@@ -9,7 +9,7 @@ import com.sap.kafka.connect.source.hana.HANASourceTask
 import org.apache.kafka.connect.data.{Field, Schema, SchemaBuilder, Struct}
 import org.scalatest.BeforeAndAfterEach
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object Field extends Enumeration {
   val VALUE, TIMESTAMP_VALUE,
@@ -104,7 +104,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       var records = task.poll()
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
         compareData(expectedData, record.value().asInstanceOf[Struct],
@@ -117,7 +117,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       assert(records.size() === 2)
 
       var count = 1
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
         expectedData = new Struct(expectedSchema)
@@ -160,7 +160,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       assert(records.size() === 1)
 
-      records.foreach(record => {
+      records.forEach(record => {
         if (record.topic() == TOPIC) {
           compareSchema(expectedSchemaForSingleTable, record.valueSchema())
           assert(record.value().isInstanceOf[Struct])
@@ -194,7 +194,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       var records = queryLoadTask.poll()
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
         compareData(expectedData, record.value().asInstanceOf[Struct],
@@ -207,7 +207,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       assert(records.size() === 2)
 
       var count = 1
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
         expectedData = new Struct(expectedSchema)
@@ -240,7 +240,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       var records = incrLoadTask.poll()
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
         compareData(expectedData, record.value().asInstanceOf[Struct],
@@ -252,7 +252,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       // because this only takes the delta
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
 
@@ -286,7 +286,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       var records = incr2LoadTask.poll()
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
         compareData(expectedData, record.value().asInstanceOf[Struct],
@@ -298,7 +298,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       // because this only takes the delta
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
 
@@ -332,7 +332,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       var records = incrQueryLoadTask.poll()
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
         compareData(expectedData, record.value().asInstanceOf[Struct],
@@ -344,7 +344,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       // because this only takes the delta
       assert(records.size() === 1)
 
-      records.toList.foreach(record => {
+      records.forEach(record => {
         compareSchema(expectedSchema, record.valueSchema())
         assert(record.value().isInstanceOf[Struct])
 
@@ -360,14 +360,14 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
   }
 
   private def compareSchema(expectedSchema: Schema, actualSchema: Schema): Unit = {
-    val expectedFields = expectedSchema.fields().toList
-    val actualFields = actualSchema.fields().toList
+    val expectedFields = expectedSchema.fields()
+    val actualFields = actualSchema.fields()
 
     assert(expectedFields.size === actualFields.size)
     var count = 0
-    expectedFields.foreach(field => {
-      assert(field.name() === actualFields(count).name())
-      assert(field.schema() === actualFields(count).schema())
+    expectedFields.forEach(field => {
+      assert(field.name() === actualFields.get(count).name())
+      assert(field.schema() === actualFields.get(count).schema())
       count = count + 1
     })
   }
@@ -376,7 +376,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
                           schema: Schema): Unit = {
     val fields = schema.fields()
 
-    fields.foreach(field => {
+    fields.forEach(field => {
       assert(expectedData.get(field.name()) ===
         actualData.get(field.name()))
     })

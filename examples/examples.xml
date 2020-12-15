@@ -8,7 +8,7 @@
     </formats>
     <fileSets>
         <fileSet>
-            <directory>.</directory>
+            <directory>..</directory>
             <outputDirectory>kafka-connector-hana-examples-${project.version}</outputDirectory>
             <includes>
                 <include>LICENSE</include>
@@ -16,7 +16,7 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>examples</directory>
+            <directory>.</directory>
             <outputDirectory>kafka-connector-hana-examples-${project.version}</outputDirectory>
             <includes>
                 <include>README.*</include>
