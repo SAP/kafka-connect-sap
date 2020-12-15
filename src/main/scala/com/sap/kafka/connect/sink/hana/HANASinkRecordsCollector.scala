@@ -13,7 +13,7 @@ import org.apache.kafka.connect.data.{Field, Schema}
 import org.apache.kafka.connect.sink.SinkRecord
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 
 class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
@@ -65,7 +65,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
 //        }
 
         if (recordSchema.valueSchema != null) {
-          for (field <- recordSchema.valueSchema.fields) {
+          for (field <- recordSchema.valueSchema.fields.asScala) {
             val fieldSchema: Schema = field.schema
             val fieldAttr = metaAttr(field.name(),
               HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
@@ -113,7 +113,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
 //          }
 
           if (recordSchema.valueSchema != null) {
-            for (field <- recordSchema.valueSchema.fields) {
+            for (field <- recordSchema.valueSchema.fields.asScala) {
               val fieldSchema: Schema = field.schema
               val fieldAttr = metaAttr(field.name(),
                 HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)

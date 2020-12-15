@@ -5,7 +5,7 @@ import java.util
 import com.sap.kafka.client.hana.HANAConfigMissingException
 import com.sap.kafka.connect.config.BaseParameters
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object HANAParameters extends BaseParameters {
 
@@ -27,6 +27,6 @@ object HANAParameters extends BaseParameters {
         " HANA DB password must be specified in 'connection.password' parameter")
     }
 
-    HANAConfig(props.toMap)
+    HANAConfig(props.asScala.toMap)
   }
 }
