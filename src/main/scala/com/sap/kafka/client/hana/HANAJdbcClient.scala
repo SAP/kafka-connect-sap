@@ -20,6 +20,7 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
   protected val driver: String = "com.sap.db.jdbc.Driver"
 
   private val CONNECTION_FAIL_R = ".*Failed to open connection.*".r
+  private val VARCHAR_STAR_R = "(?i)(n?varchar)\\(\\*\\)".r
 
   private val calendarUTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
@@ -158,9 +159,9 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
       new HANAJdbcException(s"Creation of table $tableName failed")) { () =>
       val testSchema = HANASchemaBuilder.avroToHANASchema(tableSchema)
       val fullTableName = tableWithNamespace(namespace, tableName)
-      val VARCHAR_STAR_R = "(?i)varchar\\(\\*\\)".r
-      // Varchar(*) is not supported by HANA
-      val fixedSchema = VARCHAR_STAR_R.replaceAllIn(testSchema, "VARCHAR(1000)")
+      // Varchar(*) is not supported by HANA, convert it to VARCHAR(5000)
+      // https://help.sap.com/viewer/4fe29514fd584807ac9f2a04f6754767/LATEST/en-US/a33f7884b0c14c00b1a76ecd8af5feca.html
+      val fixedSchema = VARCHAR_STAR_R.replaceAllIn(testSchema, "$1(5000)")
 
       var primaryKeys = ""
       if (keys != null) {
@@ -495,5 +496,4 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
       value
     }
   }
-
 }
