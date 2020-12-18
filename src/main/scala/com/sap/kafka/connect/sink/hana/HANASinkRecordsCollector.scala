@@ -53,15 +53,16 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
       case true =>
         log.info(s"""Table $tableName exists.Validate the schema and check if schema needs to evolve""")
         var recordFields = Seq[metaAttr]()
-
-        if (recordSchema.keySchema != null) {
-          for (field <- recordSchema.keySchema.fields) {
-            val fieldSchema: Schema = field.schema()
-            val fieldAttr = metaAttr(field.name(),
-              HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
-            recordFields = recordFields :+ fieldAttr
-          }
-        }
+        //REVISIT we should cache keySchema and valueSchema at the collector to perform a quick comparison
+        // we build recordFields for valueSchema to compare it against metaSchema retrieved from the table
+//        if (recordSchema.keySchema != null) {
+//          for (field <- recordSchema.keySchema.fields) {
+//            val fieldSchema: Schema = field.schema()
+//            val fieldAttr = metaAttr(field.name(),
+//              HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
+//            recordFields = recordFields :+ fieldAttr
+//          }
+//        }
 
         if (recordSchema.valueSchema != null) {
           for (field <- recordSchema.valueSchema.fields) {
@@ -72,7 +73,8 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
           }
         }
         if(config.topicProperties(recordHead.topic())("table.type") != BaseConfigConstants.COLLECTION_TABLE_TYPE
-            && !compareSchema(recordFields))
+          //REVISIT couldn't we just use !java.util.Objects.equals(metaSchema, recordFields)?
+          && !compareSchema(recordFields))
           {
             log.error(
               s"""Table $tableName has a different schema from the record Schema.
@@ -100,15 +102,15 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
 
           metaSchema = new MetaSchema(Seq[metaAttr](), Seq[Field]())
 
-          if (recordSchema.keySchema != null) {
-            for (field <- recordSchema.keySchema.fields) {
-              val fieldSchema: Schema = field.schema
-              val fieldAttr = metaAttr(field.name(),
-                HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
-              metaSchema.fields = metaSchema.fields :+ fieldAttr
-              metaSchema.avroFields = metaSchema.avroFields :+ field
-            }
-          }
+//          if (recordSchema.keySchema != null) {
+//            for (field <- recordSchema.keySchema.fields) {
+//              val fieldSchema: Schema = field.schema
+//              val fieldAttr = metaAttr(field.name(),
+//                HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
+//              metaSchema.fields = metaSchema.fields :+ fieldAttr
+//              metaSchema.avroFields = metaSchema.avroFields :+ field
+//            }
+//          }
 
           if (recordSchema.valueSchema != null) {
             for (field <- recordSchema.valueSchema.fields) {
