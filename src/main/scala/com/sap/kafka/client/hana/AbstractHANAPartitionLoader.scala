@@ -1,7 +1,7 @@
 package com.sap.kafka.client.hana
 
 
-import java.sql.Connection
+import java.sql.{Connection, PreparedStatement}
 import java.util.function.Consumer
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -43,8 +43,7 @@ trait AbstractHANAPartitionLoader {
                                     iterator: Iterator[SinkRecord],
                                     metaSchema: MetaSchema,
                                     batchSize: Int): Unit = {
-      WithCloseables(connection
-        .prepareStatement(prepareInsertIntoStmt(tableName, metaSchema))) { stmt =>
+    WithCloseables(connection.prepareStatement(prepareInsertIntoStmt(tableName, metaSchema))) { stmt =>
         val fieldsValuesConverters = HANAJdbcTypeConverter.getSinkRowDatatypesSetters(metaSchema.fields,
           stmt)
         for (batchRows <- iterator.grouped(batchSize)) {
