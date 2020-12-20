@@ -1,6 +1,6 @@
 package com.sap.kafka.client.hana
 
-import java.sql.{Connection, DriverManager, ResultSet}
+import java.sql.{Connection, Driver, DriverManager, ResultSet}
 import java.util.{Calendar, TimeZone}
 
 import com.sap.kafka.client.{ColumnRow, MetaSchema, hana, metaAttr}
@@ -174,16 +174,17 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
           throw new HANAJdbcException("Hash Partition is not supported when keys are" +
             " not specified. Provide the 'pk.mode' parameter")
         } else {
-          partition = "PARTITION BY HASH(\"" + keys.mkString("\", \"") + "\") PARTITIONS " + partitionCount
+          partition = " PARTITION BY HASH(\"" + keys.mkString("\", \"") + "\") PARTITIONS " + partitionCount
         }
       } else if (partitionType == BaseConfigConstants.ROUND_ROBIN_PARTITION) {
-        partition = "PARTITION BY ROUNDROBIN PARTITIONS " + partitionCount
+        partition = " PARTITION BY ROUNDROBIN PARTITIONS " + partitionCount
       }
 
       val query = if (columnTable)
-        s"""CREATE COLUMN TABLE $fullTableName ($fixedSchema$primaryKeys) $partition"""
+        s"""CREATE COLUMN TABLE $fullTableName ($fixedSchema$primaryKeys)$partition"""
       else
-        s"""CREATE TABLE $fullTableName ($fixedSchema$primaryKeys) $partition"""
+        s"""CREATE TABLE $fullTableName ($fixedSchema$primaryKeys)$partition"""
+
       log.info(s"Creating table:$tableName with SQL: $query")
       val connection = getConnection
       val stmt = connection.createStatement()
