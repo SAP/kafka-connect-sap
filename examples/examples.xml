@@ -24,6 +24,7 @@
                 <include>persons2/**/*</include>
                 <include>persons3/**/*</include>
                 <include>persons4/**/*</include>
+                <include>persons6/**/*</include>
                 <include>persons1ds/**/*</include>
                 <include>persons1db/**/*</include>
                 <include>persons1ks/**/*</include>

@@ -42,7 +42,8 @@ In order to use Apicurio registry, its client libraries must be placed in the co
 Run the following command to download those jar files into the target directory.
 
 ```
-$ mvn install
+$ make get_libs
+Getting jar files into target ...
 ...
 $ ls target
 avro-1.9.2.jar                          kafka-connect-avro-converter-5.4.2.jar
