@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sap.kafka.connect</groupId>
     <artifactId>kafka-connector-hana_2.12</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
 
     <parent>
         <groupId>com.sap.kafka.connect</groupId>
         <artifactId>kafka-connector-hana</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>0.9.0</version>
         <relativePath>../..</relativePath>
     </parent>
 
