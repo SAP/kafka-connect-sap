@@ -1,7 +1,7 @@
 {
     "name": "test-topic-4-sink",
     "config": {
-        "connector.class": "com.sap.kafka.connect.source.hana.HANASourceConnector",
+        "connector.class": "com.sap.kafka.connect.sink.hana.HANASinkConnector",
         "tasks.max": "1",
         "topics": "test_topic_4",
         "connection.url": "jdbc:sap://<host>/",
