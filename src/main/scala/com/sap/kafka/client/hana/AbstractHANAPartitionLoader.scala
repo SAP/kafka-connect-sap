@@ -7,14 +7,16 @@ import java.util.function.Consumer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.common.base.Preconditions
-import com.sap.kafka.client.MetaSchema
+import com.sap.kafka.client.{MetaSchema, metaAttr}
 import com.sap.kafka.connect.config.BaseConfigConstants
 import com.sap.kafka.connect.config.hana.HANAConfig
 import com.sap.kafka.utils.WithCloseables
 import com.sap.kafka.utils.hana.HANAJdbcTypeConverter
-import org.apache.kafka.connect.data.{Field, Struct}
+import org.apache.kafka.connect.data.{Field, Schema, Struct}
 import org.apache.kafka.connect.sink.SinkRecord
 import org.slf4j.{Logger, LoggerFactory}
+
+import scala.collection.JavaConverters._
 
 trait AbstractHANAPartitionLoader {
 
@@ -45,7 +47,9 @@ trait AbstractHANAPartitionLoader {
                                   iterator: Iterator[SinkRecord],
                                   metaSchema: MetaSchema,
                                   insertMode: String,
+                                  deleteEnabled: Boolean,
                                   batchSize: Int): Unit = {
+    //TODO change how preparedStatement usage to not create one every time
     WithCloseables(connection.prepareStatement(prepareInsertIntoStmt(tableName, metaSchema, insertMode))) { stmt =>
         val fieldsValuesConverters = HANAJdbcTypeConverter.getSinkRowDatatypesSetters(metaSchema.fields,
           stmt)
@@ -57,32 +61,64 @@ trait AbstractHANAPartitionLoader {
             if (row.key() != null && row.key().isInstanceOf[Struct]) {
               dataFromKey = row.key().asInstanceOf[Struct]
             }
-
             if (row.value() != null && row.value().isInstanceOf[Struct]) {
               dataFromValue = row.value().asInstanceOf[Struct]
             }
 
-            metaSchema.fields.zipWithIndex.foreach{
-              case (field, i) =>
-                try {
-                  Preconditions.checkArgument(dataFromKey != null && dataFromKey.get(field.name) != null)
-                  fieldsValuesConverters(i)(dataFromKey.get(field.name))
-                } catch {
-                  case e: Exception =>
-                    try {
-                      Preconditions.checkArgument(dataFromValue != null && dataFromValue.get(field.name) != null)
-                      fieldsValuesConverters(i)(dataFromValue.get(field.name))
-                    } catch {
-                      case e: Exception =>
-                        fieldsValuesConverters(i)(null)
+            if (dataFromValue == null) {
+              if (deleteEnabled) {
+                // handle the tombstone record to delete the record when deleteEnabled is true
+                if (row.keySchema != null && dataFromKey != null) {
+                  // handle delete
+                  var keyFields = Seq[metaAttr]()
+                  for (field <- row.keySchema.fields.asScala) {
+                    val fieldSchema: Schema = field.schema
+                    val fieldAttr = metaAttr(field.name(),
+                      HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
+                    keyFields = keyFields :+ fieldAttr
+                  }
+                  //TODO change how preparedStatement usage to not create one every time
+                  WithCloseables(connection.prepareStatement(prepareDeleteFromStmt(tableName, row.keySchema))) { dstmt =>
+                    val keyFieldsValuesConverters = HANAJdbcTypeConverter.getSinkRowDatatypesSetters(keyFields, dstmt)
+                    for (field <- row.keySchema.fields.asScala) {
+                      keyFieldsValuesConverters(field.index)(dataFromKey.get(field.name()))
                     }
+                    dstmt.execute()
+                  }
+                } else {
+                  // ignore
+                  log.warn("Missing schema for the tombstone record")
                 }
-               //Handle Null Values
-              /*case (null, i) =>
-                stmt.setNull(i + 1, JdbcTypeConverter
-                  .convertToHANAType(metaSchema.fields(i).dataType))*/
+              }
+            } else if (deleteEnabled && metaSchema.fields.exists(f => f.name == "__deleted")
+              && dataFromValue.get("__deleted").asInstanceOf[String].toBoolean) {
+              // skip the pseudo-delete record when deleteEnabled is true so that is not upserted
+              log.info("Skipping update for the to-be-deleted record")
+            } else {
+              // insert, upsert, pseudo-delete
+              metaSchema.fields.zipWithIndex.foreach{
+                case (field, i) =>
+                  //REVISIT why is dataFromKey looked up first?
+                  try {
+                    Preconditions.checkArgument(dataFromKey != null && dataFromKey.get(field.name) != null)
+                    fieldsValuesConverters(i)(dataFromKey.get(field.name))
+                  } catch {
+                    case e: Exception =>
+                      try {
+                        Preconditions.checkArgument(dataFromValue != null && dataFromValue.get(field.name) != null)
+                        fieldsValuesConverters(i)(dataFromValue.get(field.name))
+                      } catch {
+                        case e: Exception =>
+                          fieldsValuesConverters(i)(null)
+                      }
+                  }
+                //Handle Null Values
+                /*case (null, i) =>
+                  stmt.setNull(i + 1, JdbcTypeConverter
+                    .convertToHANAType(metaSchema.fields(i).dataType))*/
+              }
+              stmt.addBatch()
             }
-            stmt.addBatch()
           }
           stmt.executeBatch()
           stmt.clearParameters()
@@ -129,9 +165,11 @@ trait AbstractHANAPartitionLoader {
                                               iterator: Iterator[SinkRecord],
                                               metaSchema: MetaSchema,
                                               insertMode: String,
+                                              deleteEnabled: Boolean,
                                               batchSize: Int): Unit = {
     for (batchRows <- iterator.grouped(batchSize)) {
       for (row <- batchRows) {
+        //TODO change how preparedStatement usage to not create one every time
         WithCloseables(connection
           .prepareStatement(prepareJsonStatement(connection, collectionName, row, metaSchema, insertMode, batchSize))) { stmt =>
           stmt.execute()
@@ -248,4 +286,18 @@ trait AbstractHANAPartitionLoader {
     stmt
   }
 
+  private[hana] def prepareDeleteFromStmt(fullTableName: String, schema: Schema): String = {
+    val fields = schema.fields
+    val builder = new StringBuilder()
+    builder.append(s"DELETE FROM $fullTableName WHERE ")
+    for (field <- fields.asScala) {
+      if (field.index > 0) {
+        builder.append(" AND ")
+      }
+      builder.append(s""""${field.name}" = ?""")
+    }
+    val stmt = builder.toString()
+    log.info(s"Creating prepared statement: $stmt")
+    stmt
+  }
 }

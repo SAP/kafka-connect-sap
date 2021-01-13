@@ -360,11 +360,12 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
                 schema: MetaSchema,
                 records: Seq[SinkRecord],
                 insertMode: String,
+                deleteEnabled: Boolean,
                 batchSize: Int): Unit = {
      ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
       new HANAJdbcException(s"loading data into $tableName is not successful")) { () =>
        val fullTableName = tableWithNamespace(namespace, tableName)
-       HANAPartitionLoader.loadPartition(connection, fullTableName, records.iterator, schema, insertMode, batchSize)
+       HANAPartitionLoader.loadPartition(connection, fullTableName, records.iterator, schema, insertMode, deleteEnabled, batchSize)
      }
   }
 
@@ -373,10 +374,11 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
                schema: MetaSchema,
                records: Seq[SinkRecord],
                insertMode: String,
+               deleteEnabled: Boolean,
                batchSize: Int): Unit = {
     ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
       new HANAJdbcException(s"loading data into $collectionName is not successful")) { () =>
-      HANAPartitionLoader.loadPartitionForJsonStore(connection, collectionName, records.iterator, schema, insertMode, batchSize)
+      HANAPartitionLoader.loadPartitionForJsonStore(connection, collectionName, records.iterator, schema, insertMode, deleteEnabled, batchSize)
     }
   }
 

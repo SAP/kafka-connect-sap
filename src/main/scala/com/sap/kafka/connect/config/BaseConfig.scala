@@ -149,6 +149,16 @@ abstract class BaseConfig(props: Map[String, String]) {
           case _ => log.warn(s"Ignoring invalid insert.mode $value")
         }
       }
+
+      if (key == s"$topic.delete.enabled") {
+        value match {
+          case "true" | "false" =>
+            topicPropMap.put("delete.enabled", value)
+          case _ =>
+            log.warn(s"Ignoring invalid delete.enabled $value")
+        }
+      }
+
     }
 
     if (topicPropMap.get("pk.mode").isEmpty) {

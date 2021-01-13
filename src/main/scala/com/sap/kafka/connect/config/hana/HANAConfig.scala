@@ -55,6 +55,10 @@ case class HANAConfig(props: Map[String, String]) extends BaseConfig(props: Map[
     if (topicPropMap.get("insert.mode").isEmpty) {
       topicPropMap.put("insert.mode", BaseConfigConstants.INSERT_MODE_INSERT)
     }
+
+    if (topicPropMap.get("delete.enabled").isEmpty) {
+      topicPropMap.put("delete.enabled", "false")
+    }
     topicPropMap.toMap
   }
 }
