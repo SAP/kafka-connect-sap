@@ -155,10 +155,11 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
   }
 
   private[sink] def flush(): Seq[SinkRecord] = {
+    val insertMode = config.topicProperties(records.head.topic())("insert.mode")
     if (config.topicProperties(records.head.topic())("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE) {
-      client.loadData(getTableName._2, connection, metaSchema, records, config.batchSize)
+      client.loadData(getTableName._2, connection, metaSchema, records, insertMode, config.batchSize)
     } else {
-      client.loadData(getTableName._1, getTableName._2, connection, metaSchema, records, config.batchSize)
+      client.loadData(getTableName._1, getTableName._2, connection, metaSchema, records, insertMode, config.batchSize)
     }
     val flushedRecords = records
     records = Seq.empty[SinkRecord]

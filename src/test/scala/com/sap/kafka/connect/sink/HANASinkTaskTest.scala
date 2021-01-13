@@ -4,7 +4,8 @@ import java.sql.{Connection, DatabaseMetaData, Driver, DriverAction, DriverManag
 import java.util
 import java.util.Collections
 
-import com.sap.kafka.connect.MockJdbcDriver
+import com.sap.kafka.connect.{MockJdbcDriver, config}
+import com.sap.kafka.connect.config.BaseConfigConstants
 import com.sap.kafka.connect.sink.hana.HANASinkTask
 import org.apache.kafka.connect.data.{Schema, SchemaBuilder, Struct}
 import org.apache.kafka.connect.sink.{SinkRecord, SinkTaskContext}
@@ -49,15 +50,23 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     .field("id", Schema.INT32_SCHEMA)
   val key = new Struct(keySchema).put("id", 23)
 
+  test("sink create and insert(default)") {
+    verifySinkTask(null, null, null, valueSchema, value)
+  }
+
   test("sink create and insert") {
-    verifySinkTask(null, null, valueSchema, value)
+    verifySinkTask(BaseConfigConstants.INSERT_MODE_INSERT, null, null, valueSchema, value)
+  }
+
+  test("sink create and upsert") {
+    verifySinkTask(BaseConfigConstants.INSERT_MODE_UPSERT, null, null, valueSchema, value)
   }
 
   test("sink create and insert with key-schema") {
-    verifySinkTask(keySchema, key, valueSchema, value)
+    verifySinkTask(BaseConfigConstants.INSERT_MODE_INSERT, keySchema, key, valueSchema, value)
   }
 
-  def verifySinkTask(keySchema: Schema, key: Any, valueSchema: Schema, value: Any): Unit = {
+  def verifySinkTask(insertMode: String, keySchema: Schema, key: Any, valueSchema: Schema, value: Any): Unit = {
     mockTaskContext = mock(classOf[SinkTaskContext])
     mockConnection = mock(classOf[Connection])
     mockStatement = mock(classOf[Statement])
@@ -84,12 +93,18 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     val task: HANASinkTask = new HANASinkTask()
     task.initialize(mockTaskContext)
 
-    task.start(singleTableConfig())
+    task.start(singleTableConfig(insertMode))
 
     task.put(Collections.singleton(new SinkRecord(TOPIC, 1, keySchema, key, valueSchema, value, 0)))
 
+    val stmt = insertMode match {
+      case BaseConfigConstants.INSERT_MODE_UPSERT =>
+        "UPSERT \"TEST\".\"EMPLOYEES_SINK\" (\"id\") VALUES (?) WITH PRIMARY KEY"
+      case _ =>
+        "INSERT INTO \"TEST\".\"EMPLOYEES_SINK\" (\"id\") VALUES (?)"
+    }
     verify(mockStatement).execute("CREATE COLUMN TABLE \"TEST\".\"EMPLOYEES_SINK\" (\"id\" INTEGER NOT NULL)")
-    verify(mockConnection).prepareStatement("INSERT INTO \"TEST\".\"EMPLOYEES_SINK\" (\"id\") VALUES (?)")
+    verify(mockConnection).prepareStatement(stmt)
     verify(mockPreparedStatement).setInt(1, 23)
     verify(mockPreparedStatement).addBatch()
     verify(mockPreparedStatement).executeBatch
@@ -98,7 +113,7 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
   }
 
 
-  protected def singleTableConfig(): java.util.Map[String, String] = {
+  protected def singleTableConfig(insertMode: String): java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
     props.put("connection.url", TEST_CONNECTION_URL)
@@ -107,6 +122,9 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     props.put("auto.create", "true")
     props.put("topics", TOPIC)
     props.put(s"$TOPIC.table.name", SINGLE_TABLE_NAME_FOR_INSERT)
+    if (insertMode != null) {
+      props.put(s"$TOPIC.insert.mode", insertMode)
+    }
     props
   }
 }
