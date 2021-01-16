@@ -10,4 +10,5 @@
 * [persons4ds](persons4ds/README.md) : distributed version of persons4 using Docker with Strimzi Kafka image
 * [persons1ks](persons1ks/README.md) : distributed version of persons1 in Kubernetes with Strimzi Kafka image
 * [persons4ks](persons4ks/README.md) : distributed version of persons4 in Kubernetes with Strimzi Kafka image
+* [inventory7db](inventory7db/README.md) : Debezium MySQL and HANA connectors to copy tables from MySQL to HANA using Debezium's table change events
 
