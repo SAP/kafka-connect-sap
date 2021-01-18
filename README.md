@@ -83,12 +83,12 @@ The above configuration says this sink connector should read messages from Kafka
 ./bin/connect-standalone config/connect-standalone.properties config/connect-hana-test-source-1.properties config/connect-hana-test-sink-1.properties
 ```
 
-The above scenario is the simplest scenario of transferring records between Hana and Kafka. For the detail of this scenario and other more complex scenarios, refer to Examples#example.
+The above scenario is the simplest scenario of transferring records between Hana and Kafka. For the detail of this scenario and other more complex scenarios, refer to [Examples](#examples).
 
 
-#### Distributed Mode
+#### Running Kafka Connect
 
-In a production environment, it is suggested to run the Kafka Connector on [distributed mode](http://docs.confluent.io/3.0.0/connect/userguide.html#distributed-mode)
+The demo examples included in [Examples](#examples) use Kafka Connect running in different environments such as standalone and distributed modes. For general information on how to run Kafka Connect, refer to [Kafka Connect documentation](https://kafka.apache.org/documentation/#connect_running)
 
 
 ## Configuration
@@ -110,6 +110,10 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
   * `{topic}.table.name` - This setting allows specifying the SAP DBs table name where the data needs to be written to. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
 
   * `{topic}.table.type` - This is a DB specific configuration setting which allows creation of Row & Column tables if `auto.create` is set to true. Default value is `column`. And supported values are `column, row`.
+  
+  * `{topic}.insert.mode` - This setting can be used to specify one of the available insertion modes `insert` and `upsert`. Default is `insert`.
+
+  * `{topic}.delete.enabled` - This setting can be used to allow the deletion of the record when its corresponding tombstone record is received by the connector. Default is `false`.
 
   * `{topic}.pk.mode` - This setting can be used to specify the primary key mode required when `auto.create` is set to `true` & the table name specified in `{topic}.table.name` does not exist in SAP DB. Default is `none`. And supported values are `record_key, record_value`.
 
