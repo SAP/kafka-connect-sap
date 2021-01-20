@@ -1,0 +1,22 @@
+{
+    "name": "inventory-hana-sink",
+    "config": {
+        "connector.class": "com.sap.kafka.connect.source.hana.HANASourceConnector",
+        "tasks.max": "1",
+        "topics": "dbserver1.inventory.customers",
+        "connection.url": "jdbc:sap://<host>/",
+        "connection.user": "${file:/kafka/custom-config/secrets.properties:connection1-user}",
+        "connection.password": "${file:/kafka/custom-config/secrets.properties:connection1-password}",
+        "transforms": "unwrap",
+        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        "transforms.unwrap.drop.tombstones": "false",
+        "transforms.unwrap.delete.handling.mode": "rewrite",
+        "auto.create": "true",
+        "dbserver1.inventory.customers.insert.mode": "upsert",
+        "dbserver1.inventory.customers.delete.enabled": "false",
+        "dbserver1.inventory.customers.pk.fields": "id",
+        "dbserver1.inventory.customers.pk.mode": "record_key",
+        "dbserver1.inventory.customers.table.name": "\"<schemaname>\".\"INVENTORY_CUSTOMERS\""
+    }
+}
+

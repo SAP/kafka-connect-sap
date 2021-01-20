@@ -52,6 +52,13 @@ case class HANAConfig(props: Map[String, String]) extends BaseConfig(props: Map[
         s" an incrementing column must be specified")
     }
 
+    if (topicPropMap.get("insert.mode").isEmpty) {
+      topicPropMap.put("insert.mode", BaseConfigConstants.INSERT_MODE_INSERT)
+    }
+
+    if (topicPropMap.get("delete.enabled").isEmpty) {
+      topicPropMap.put("delete.enabled", "false")
+    }
     topicPropMap.toMap
   }
 }

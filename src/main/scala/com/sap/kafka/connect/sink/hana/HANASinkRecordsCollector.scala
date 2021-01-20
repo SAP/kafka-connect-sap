@@ -48,6 +48,10 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     val recordHead = records.head
     val recordSchema = KeyValueSchema(recordHead.keySchema(), recordHead.valueSchema())
 
+    if (recordHead.valueSchema == null && recordHead.value == null) {
+      // skip the delete marker
+      return
+    }
     initTableConfig(getTableName._1,getTableName._2, recordHead.topic()) match
     {
       case true =>
@@ -155,13 +159,17 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
   }
 
   private[sink] def flush(): Seq[SinkRecord] = {
-    if (config.topicProperties(records.head.topic())("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE) {
-      client.loadData(getTableName._2, connection, metaSchema, records, config.batchSize)
-    } else {
-      client.loadData(getTableName._1, getTableName._2, connection, metaSchema, records, config.batchSize)
-    }
     val flushedRecords = records
-    records = Seq.empty[SinkRecord]
+    if (!records.isEmpty) {
+      val insertMode = config.topicProperties(records.head.topic())("insert.mode")
+      val deleteEnabled = config.topicProperties(records.head.topic())("delete.enabled").toBoolean
+      if (config.topicProperties(records.head.topic())("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE) {
+        client.loadData(getTableName._2, connection, metaSchema, records, insertMode, deleteEnabled, config.batchSize)
+      } else {
+        client.loadData(getTableName._1, getTableName._2, connection, metaSchema, records, insertMode, deleteEnabled, config.batchSize)
+      }
+      records = Seq.empty[SinkRecord]
+    }
     flushedRecords
   }
 

@@ -61,8 +61,10 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
           tableRecordsCollector.add(collectionAsScalaIterableConverter(recordsPerTopic).asScala.toSeq)
       }
     }
-    flush(tableCache.toMap)
-    log.info("flushing records to HANA successful")
+    if (!tableCache.isEmpty) {
+      flush(tableCache.toMap)
+      log.info("flushing records to HANA successful")
+    }
   }
 
   private def flush(tableCache: Map[String, HANASinkRecordsCollector]): Unit = {

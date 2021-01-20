@@ -1,8 +1,10 @@
 package com.sap.kafka.connect.config
 
+import org.slf4j.{Logger, LoggerFactory}
+
 
 abstract class BaseConfig(props: Map[String, String]) {
-
+  private val log: Logger = LoggerFactory.getLogger(classOf[BaseConfig])
 
   /**
     * DB Jdbc user for source & sink
@@ -121,10 +123,11 @@ abstract class BaseConfig(props: Map[String, String]) {
         * Default value is none.
         */
       if (key == s"$topic.table.partition.mode") {
-        if (value == BaseConfigConstants.ROUND_ROBIN_PARTITION)
-          topicPropMap.put("table.partition.mode", value)
-        else if (value == BaseConfigConstants.HASH_PARTITION)
-          topicPropMap.put("table.partition.mode", value)
+        value match {
+          case BaseConfigConstants.ROUND_ROBIN_PARTITION | BaseConfigConstants.HASH_PARTITION =>
+            topicPropMap.put("table.partition.mode", value)
+          case _ => log.warn(s"Ignoring invalid table.partition.mode $value")
+        }
       }
 
       /**
@@ -134,6 +137,28 @@ abstract class BaseConfig(props: Map[String, String]) {
       if (key == s"$topic.table.partition.count") {
         topicPropMap.put("table.partition.count", value)
       }
+
+      /**
+        * insert mode to be used by sink.
+        * Default is insert.
+        */
+      if (key == s"$topic.insert.mode") {
+        value match {
+          case BaseConfigConstants.INSERT_MODE_INSERT | BaseConfigConstants.INSERT_MODE_UPSERT =>
+            topicPropMap.put("insert.mode", value)
+          case _ => log.warn(s"Ignoring invalid insert.mode $value")
+        }
+      }
+
+      if (key == s"$topic.delete.enabled") {
+        value match {
+          case "true" | "false" =>
+            topicPropMap.put("delete.enabled", value)
+          case _ =>
+            log.warn(s"Ignoring invalid delete.enabled $value")
+        }
+      }
+
     }
 
     if (topicPropMap.get("pk.mode").isEmpty) {

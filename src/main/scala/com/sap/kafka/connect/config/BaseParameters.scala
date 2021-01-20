@@ -12,6 +12,9 @@ object BaseConfigConstants {
   val QUERY_MODE_TABLE = "table"
   val QUERY_MODE_SQL = "query"
 
+  val INSERT_MODE_INSERT = "insert"
+  val INSERT_MODE_UPSERT = "upsert"
+
   val MODE_BULK = "bulk"
   val MODE_INCREMENTING = "incrementing"
 

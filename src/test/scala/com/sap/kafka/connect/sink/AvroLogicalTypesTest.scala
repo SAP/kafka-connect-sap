@@ -2,7 +2,7 @@ package com.sap.kafka.connect.sink
 
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
-import java.{sql, util}
+import java.util
 import java.util.TimeZone
 
 import com.sap.kafka.connect.MockJdbcClient

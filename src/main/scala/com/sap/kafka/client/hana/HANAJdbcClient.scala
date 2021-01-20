@@ -355,15 +355,17 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
    * @param batchSize The batch size parameter
    */
    def loadData(namespace: Option[String],
-                             tableName: String,
-                            connection: Connection,
-                             schema: MetaSchema,
-                             records: Seq[SinkRecord],
-                             batchSize: Int): Unit = {
+                tableName: String,
+                connection: Connection,
+                schema: MetaSchema,
+                records: Seq[SinkRecord],
+                insertMode: String,
+                deleteEnabled: Boolean,
+                batchSize: Int): Unit = {
      ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
       new HANAJdbcException(s"loading data into $tableName is not successful")) { () =>
        val fullTableName = tableWithNamespace(namespace, tableName)
-       HANAPartitionLoader.loadPartition(connection, fullTableName, records.iterator, schema, batchSize)
+       HANAPartitionLoader.loadPartition(connection, fullTableName, records.iterator, schema, insertMode, deleteEnabled, batchSize)
      }
   }
 
@@ -371,10 +373,12 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
                connection: Connection,
                schema: MetaSchema,
                records: Seq[SinkRecord],
+               insertMode: String,
+               deleteEnabled: Boolean,
                batchSize: Int): Unit = {
     ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
       new HANAJdbcException(s"loading data into $collectionName is not successful")) { () =>
-      HANAPartitionLoader.loadPartitionForJsonStore(connection, collectionName, records.iterator, schema, batchSize)
+      HANAPartitionLoader.loadPartitionForJsonStore(connection, collectionName, records.iterator, schema, insertMode, deleteEnabled, batchSize)
     }
   }
 
