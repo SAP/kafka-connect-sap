@@ -28,7 +28,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <encoding>UTF-8</encoding>
-
+        
         <guava.version>29.0-jre</guava.version>
         <mockito-core.version>3.6.0</mockito-core.version>
         <kafka.version>2.4.1</kafka.version>
@@ -139,7 +139,30 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <verbose>false</verbose>
+                    <failOnViolation>true</failOnViolation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <failOnWarning>false</failOnWarning>
+                    <sourceDirectory>src/main/scala</sourceDirectory>
+                    <testSourceDirectory>src/test/scala</testSourceDirectory>
+                    <configLocation>scalastyle_config.xml</configLocation>
+                    <outputFile>target/scalastyle-output.xml</outputFile>
+                    <outputEncoding>UTF-8</outputEncoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- disable surefire -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
