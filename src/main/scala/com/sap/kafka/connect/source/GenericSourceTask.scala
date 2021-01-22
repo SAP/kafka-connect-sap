@@ -142,15 +142,17 @@ abstract class GenericSourceTask extends SourceTask {
 
       var waitFlag = false
       if (!querier.querying()) {
-        val nextUpdate = querier.getLastUpdate() +
-          config.topicProperties(topic)("poll.interval.ms").toInt
-        val untilNext = nextUpdate - now
+        if (querier.getMaxRowsOffset() == 0) {
+          val nextUpdate = querier.getLastUpdate() +
+            config.topicProperties(topic)("poll.interval.ms").toInt
+          val untilNext = nextUpdate - now
 
-        if (untilNext > 0) {
-          log.info(s"Waiting $untilNext ms to poll from ${querier.toString}")
-          waitFlag = true
-          time.sleep(untilNext)
-          now = time.milliseconds()
+          if (untilNext > 0) {
+            log.info(s"Waiting $untilNext ms to poll from ${querier.toString}")
+            waitFlag = true
+            time.sleep(untilNext)
+            now = time.milliseconds()
+          }
         }
       }
 
@@ -162,12 +164,17 @@ abstract class GenericSourceTask extends SourceTask {
 
         results ++= querier.extractRecords()
 
+        // dequeue the queierer only if the records are fully polled
+        if (querier.getMaxRowsOffset() == 0) {
+          val removedQuerier = tableQueue.dequeue()
+          assert(removedQuerier == querier)
+        }
         log.info(s"Closing this query for ${querier.toString}")
-        val removedQuerier = tableQueue.dequeue()
-        assert(removedQuerier == querier)
         now = time.milliseconds()
         querier.close(now)
-        tableQueue.enqueue(querier)
+        if (querier.getMaxRowsOffset() == 0) {
+          tableQueue.enqueue(querier)
+        }
 
         if (results.isEmpty) {
           log.info(s"No updates for ${querier.toString}")
