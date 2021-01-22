@@ -58,6 +58,11 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     .field("__deleted", Schema.STRING_SCHEMA)
   val valueDeleted = new Struct(valueDeletableSchema).put("id", 23).put("__deleted", "true")
 
+  val valueNoKeySchema = SchemaBuilder.struct()
+    .name("schema for single table")
+    .field("name", Schema.STRING_SCHEMA)
+  val valueNoKey = new Struct(valueNoKeySchema).put("name", "homer")
+
   test("sink create and insert(default)") {
     verifySinkTask(null, null, null, valueSchema, value)
   }
@@ -72,6 +77,10 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
 
   test("sink create and insert with key-schema") {
     verifySinkTask(BaseConfigConstants.INSERT_MODE_INSERT, keySchema, key, valueSchema, value)
+  }
+
+  test("sink create and insert with key-schema and with no key value-schema") {
+    verifySinkTask(BaseConfigConstants.INSERT_MODE_INSERT, keySchema, key, valueNoKeySchema, valueNoKey)
   }
 
   test("sink delete with upsert delete-disabled") {
@@ -113,17 +122,34 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     val task: HANASinkTask = new HANASinkTask()
     task.initialize(mockTaskContext)
 
-    task.start(singleTableConfig(insertMode, "false"))
+    task.start(singleTableConfig(keySchema != null, insertMode, "false"))
 
     task.put(Collections.singleton(new SinkRecord(TOPIC, 1, keySchema, key, valueSchema, value, 0)))
 
+    val pkeys = keySchema match {
+      case null =>
+        // no key
+        ""
+      case _ =>
+        ", PRIMARY KEY (\"id\")"
+    }
+    val sparams = valueSchema.field("id") match {
+      case null =>
+        // valueSchema without the key and has additional field "name"
+        ("\"id\", \"name\"", "?, ?",
+          s"""CREATE COLUMN TABLE "TEST"."EMPLOYEES_SINK" ("id" INTEGER NOT NULL, "name" VARCHAR(5000) NOT NULL${pkeys})""")
+      case _ =>
+        // valueSchema with the key and no field "name"
+        ("\"id\"", "?",
+          s"""CREATE COLUMN TABLE "TEST"."EMPLOYEES_SINK" ("id" INTEGER NOT NULL${pkeys})""")
+    }
     val stmt = insertMode match {
       case BaseConfigConstants.INSERT_MODE_UPSERT =>
-        "UPSERT \"TEST\".\"EMPLOYEES_SINK\" (\"id\") VALUES (?) WITH PRIMARY KEY"
+        s"""UPSERT "TEST"."EMPLOYEES_SINK" (${sparams._1}) VALUES (${sparams._2}) WITH PRIMARY KEY"""
       case _ =>
-        "INSERT INTO \"TEST\".\"EMPLOYEES_SINK\" (\"id\") VALUES (?)"
+        s"""INSERT INTO "TEST"."EMPLOYEES_SINK" (${sparams._1}) VALUES (${sparams._2})"""
     }
-    verify(mockStatement).execute("CREATE COLUMN TABLE \"TEST\".\"EMPLOYEES_SINK\" (\"id\" INTEGER NOT NULL)")
+    verify(mockStatement).execute(sparams._3)
     verify(mockConnection).prepareStatement(stmt)
     verify(mockPreparedStatement).setInt(1, 23)
     verify(mockPreparedStatement).addBatch()
@@ -164,7 +190,7 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     val task: HANASinkTask = new HANASinkTask()
     task.initialize(mockTaskContext)
 
-    task.start(singleTableConfig(insertMode, deleteEnabled))
+    task.start(singleTableConfig(keySchema != null, insertMode, deleteEnabled))
 
     // assuming a tombstone record is generated
     task.put(util.Arrays.asList(
@@ -205,7 +231,7 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
   }
 
 
-  protected def singleTableConfig(insertMode: String, deleteEnabled: String): java.util.Map[String, String] = {
+  protected def singleTableConfig(useKey: Boolean, insertMode: String, deleteEnabled: String): java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
     props.put("connection.url", TEST_CONNECTION_URL)
@@ -214,6 +240,10 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     props.put("auto.create", "true")
     props.put("topics", TOPIC)
     props.put(s"$TOPIC.table.name", SINGLE_TABLE_NAME_FOR_INSERT)
+    if (useKey) {
+      props.put(s"$TOPIC.pk.mode", "record_key")
+      props.put(s"$TOPIC.pk.fields", "id")
+    }
     if (insertMode != null) {
       props.put(s"$TOPIC.insert.mode", insertMode)
     }

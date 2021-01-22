@@ -14,6 +14,7 @@ import org.apache.kafka.connect.sink.SinkRecord
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 
 class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
@@ -52,28 +53,32 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
       // skip the delete marker
       return
     }
+    val allFields = mutable.Set[String]()
     initTableConfig(getTableName._1,getTableName._2, recordHead.topic()) match
     {
       case true =>
-        log.info(s"""Table $tableName exists.Validate the schema and check if schema needs to evolve""")
+        log.info(s"""Table $tableName exists. Validate the schema and check if schema needs to evolve""")
         var recordFields = Seq[metaAttr]()
         //REVISIT we should cache keySchema and valueSchema at the collector to perform a quick comparison
         // we build recordFields for valueSchema to compare it against metaSchema retrieved from the table
-//        if (recordSchema.keySchema != null) {
-//          for (field <- recordSchema.keySchema.fields) {
-//            val fieldSchema: Schema = field.schema()
-//            val fieldAttr = metaAttr(field.name(),
-//              HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
-//            recordFields = recordFields :+ fieldAttr
-//          }
-//        }
+        if (recordSchema.keySchema != null) {
+          for (field <- recordSchema.keySchema.fields.asScala) {
+            allFields.add(field.name)
+            val fieldSchema: Schema = field.schema
+            val fieldAttr = metaAttr(field.name,
+              HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
+            recordFields = recordFields :+ fieldAttr
+          }
+        }
 
         if (recordSchema.valueSchema != null) {
           for (field <- recordSchema.valueSchema.fields.asScala) {
-            val fieldSchema: Schema = field.schema
-            val fieldAttr = metaAttr(field.name(),
-              HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
-            recordFields = recordFields :+ fieldAttr
+            if (!allFields.contains(field.name)) {
+              val fieldSchema: Schema = field.schema
+              val fieldAttr = metaAttr(field.name(),
+                HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
+              recordFields = recordFields :+ fieldAttr
+            }
           }
         }
         if(config.topicProperties(recordHead.topic())("table.type") != BaseConfigConstants.COLLECTION_TABLE_TYPE
@@ -106,23 +111,26 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
 
           metaSchema = new MetaSchema(Seq[metaAttr](), Seq[Field]())
 
-//          if (recordSchema.keySchema != null) {
-//            for (field <- recordSchema.keySchema.fields) {
-//              val fieldSchema: Schema = field.schema
-//              val fieldAttr = metaAttr(field.name(),
-//                HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
-//              metaSchema.fields = metaSchema.fields :+ fieldAttr
-//              metaSchema.avroFields = metaSchema.avroFields :+ field
-//            }
-//          }
-
-          if (recordSchema.valueSchema != null) {
-            for (field <- recordSchema.valueSchema.fields.asScala) {
+          if (recordSchema.keySchema != null) {
+            for (field <- recordSchema.keySchema.fields.asScala) {
+              allFields.add(field.name)
               val fieldSchema: Schema = field.schema
-              val fieldAttr = metaAttr(field.name(),
+              val fieldAttr = metaAttr(field.name,
                 HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
               metaSchema.fields = metaSchema.fields :+ fieldAttr
               metaSchema.avroFields = metaSchema.avroFields :+ field
+            }
+          }
+
+          if (recordSchema.valueSchema != null) {
+            for (field <- recordSchema.valueSchema.fields.asScala) {
+              if (!allFields.contains(field.name)) {
+                val fieldSchema: Schema = field.schema
+                val fieldAttr = metaAttr(field.name(),
+                  HANAJdbcTypeConverter.convertToHANAType(fieldSchema), 1, 0, 0, isSigned = false)
+                metaSchema.fields = metaSchema.fields :+ fieldAttr
+                metaSchema.avroFields = metaSchema.avroFields :+ field
+              }
             }
           }
 
