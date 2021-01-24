@@ -15,6 +15,8 @@ class HANASinkTask extends GenericSinkTask {
   private val tableCache = scala.collection.mutable.Map[String, HANASinkRecordsCollector]()
   var hanaClient: HANAJdbcClient = _
 
+  override def version(): String = getClass.getPackage.getImplementationVersion
+
   override def start(props: util.Map[String, String]): Unit = {
     log.info("Starting Kafka-Connect task")
     config = HANAParameters.getConfig(props)
