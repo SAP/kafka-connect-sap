@@ -32,6 +32,8 @@ which should produce the Kafka Connector jar file `kafka-connector-hana_m-n.jar`
 
 #####   For SAP Hana
 
+> Please refer to [SAP Developer License Agreement](https://tools.hana.ondemand.com/developer-license-3_1.txt) for the use of the driver jar.
+
 - Follow the steps in [SAP HANA Client Interface Programming Reference](https://help.sap.com/viewer/f1b440ded6144a54ada97ff95dac7adf/LATEST/en-US/434e2962074540e18c802fd478de86d6.html) guide to access the SAP HANA Jdbc jar.
 - The maven coordinate of the driver is `com.sap.cloud.db.jdbc:ngdbc:x.x.x` and the drivers are available at the central maven repository [https://search.maven.org/artifact/com.sap.cloud.db.jdbc/ngdbc](https://search.maven.org/artifact/com.sap.cloud.db.jdbc/ngdbc).
 
