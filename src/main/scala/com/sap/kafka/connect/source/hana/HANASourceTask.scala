@@ -14,9 +14,8 @@ class HANASourceTask extends GenericSourceTask {
     this.jdbcClient = jdbcClient
   }
 
-  override def version(): String = {
-    getClass.getPackage.getImplementationVersion
-  }
+  override def version(): String = getClass.getPackage.getImplementationVersion
+
 
   override def createJdbcClient(): HANAJdbcClient = {
     config match {
