@@ -3,13 +3,10 @@ package com.sap.kafka.connect.source
 import java.util
 
 import com.sap.kafka.client.MetaSchema
-import com.sap.kafka.connect.MockJdbcClient
-import com.sap.kafka.connect.config.hana.HANAParameters
 import com.sap.kafka.connect.source.hana.HANASourceTask
 import org.apache.kafka.connect.data.{Field, Schema, SchemaBuilder, Struct}
+import org.apache.kafka.connect.source.SourceRecord
 import org.scalatest.BeforeAndAfterEach
-
-import scala.collection.JavaConverters._
 
 object Field extends Enumeration {
   val VALUE, TIMESTAMP_VALUE,
@@ -23,6 +20,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
   protected var incrLoadTask: HANASourceTask = _
   protected var incr2LoadTask: HANASourceTask = _
   protected var incrQueryLoadTask: HANASourceTask = _
+  protected var maxrowsLoadTask: HANASourceTask = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -31,6 +29,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     incr2LoadTask = new HANASourceTask(time, jdbcClient)
     incrQueryLoadTask = new HANASourceTask(time, jdbcClient)
     multiTableLoadTask = new HANASourceTask(time, jdbcClient)
+    maxrowsLoadTask = new HANASourceTask(time, jdbcClient)
 
     jdbcClient.createTable(Some("TEST"),
       SINGLE_TABLE_NAME_FOR_BULK_LOAD.split("\\.")(1).replace("\"", ""),
@@ -38,6 +37,10 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       3000)
     jdbcClient.createTable(Some("TEST"),
       SINGLE_TABLE_NAME_FOR_BULK_QUERY_LOAD.split("\\.")(1).replace("\"", ""),
+      MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA))),
+      3000)
+    jdbcClient.createTable(Some("TEST"),
+      SINGLE_TABLE_NAME_FOR_BULK_MAXROWS_LOAD.split("\\.")(1).replace("\"", ""),
       MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA))),
       3000)
     jdbcClient.createTable(Some("TEST"),
@@ -67,6 +70,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       val statement = connection.createStatement()
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_BULK_LOAD)
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_BULK_QUERY_LOAD)
+      statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_BULK_MAXROWS_LOAD)
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_QUERY_LOAD)
       statement.execute("drop table " + FIRST_TABLE_NAME_FOR_MULTI_LOAD)
       statement.execute("drop table " + SECOND_TABLE_NAME_FOR_MULTI_LOAD)
@@ -359,6 +363,43 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     }
   }
 
+  test("bulk periodic load with iterations by batch.max.row") {
+    val connection = jdbcClient.getConnection
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      val sqlstr = "insert into %s values(%d)"
+      for (i <- 1 to 5) {
+        stmt.execute(sqlstr.format(SINGLE_TABLE_NAME_FOR_BULK_MAXROWS_LOAD, i))
+      }
+
+      val expectedSchema = SchemaBuilder.struct().name("expected schema")
+        .field("id", Schema.INT32_SCHEMA)
+      maxrowsLoadTask.start(singleTableMaxRowsConfig("2"))
+      var expectedData = new Struct(expectedSchema)
+        .put("id", 1)
+
+      // batch.max.rows 2 will require 3 polls to load 5 rows
+      for(i <- 1 to 3){
+        var records = maxrowsLoadTask.poll()
+        assert(records.size() === (i match {
+          case 3 => 1
+          case _ => 2
+        }))
+        verifyRecords(i-1, 2, records, expectedSchema)
+      }
+
+      stmt.execute(sqlstr.format(SINGLE_TABLE_NAME_FOR_BULK_MAXROWS_LOAD, 6))
+      for(i <- 1 to 3) {
+        var records = maxrowsLoadTask.poll()
+        assert(records.size() === 2)
+        verifyRecords(i-1, 2, records, expectedSchema)
+      }
+    } finally {
+      connection.close()
+    }
+  }
+
   private def compareSchema(expectedSchema: Schema, actualSchema: Schema): Unit = {
     val expectedFields = expectedSchema.fields()
     val actualFields = actualSchema.fields()
@@ -380,6 +421,19 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       assert(expectedData.get(field.name()) ===
         actualData.get(field.name()))
     })
+  }
+
+  private def verifyRecords(cycle : Int, size : Int, records : util.List[SourceRecord], expectedSchema : SchemaBuilder): Unit = {
+    var index = 1
+    records.forEach(record => {
+      compareSchema(expectedSchema, record.valueSchema())
+      assert(record.value().isInstanceOf[Struct])
+      var expectedData = new Struct(expectedSchema)
+        .put("id", cycle * size + index)
+      compareData(expectedData, record.value().asInstanceOf[Struct], expectedSchema)
+      index = index + 1
+    })
+
   }
 
   protected def singleTableConfigInIncrementalMode(tableName: String, columnName: String):
@@ -413,6 +467,22 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     props.put(s"$TOPIC.partition.count", "5")
     props.put(s"$TOPIC.poll.interval.ms", "60000")
     props.put(s"$TOPIC.incrementing.column.name", "id")
+
+    props
+  }
+
+  protected def singleTableMaxRowsConfig(maxRows: String): java.util.Map[String, String] = {
+    val props = new util.HashMap[String, String]()
+
+    props.put("connection.url", TEST_CONNECTION_URL)
+    props.put("connection.user", "sa")
+    props.put("connection.password", "sa")
+    props.put("mode", "bulk")
+    props.put("batch.max.rows", maxRows)
+    props.put("topics", TOPIC)
+    props.put(s"$TOPIC.table.name", SINGLE_TABLE_NAME_FOR_BULK_MAXROWS_LOAD)
+    props.put(s"$TOPIC.partition.count", "1")
+    props.put(s"$TOPIC.poll.interval.ms", "60000")
 
     props
   }

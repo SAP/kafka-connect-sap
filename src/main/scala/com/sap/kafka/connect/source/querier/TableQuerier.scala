@@ -21,10 +21,13 @@ abstract class TableQuerier(mode: String, tableOrQuery: String,
   var schema: Schema = _
   var queryString: Option[String] = None
   var resultList: Option[List[Struct]] = None
+  var maxRowsOffset: Int = 0
 
   val log = LoggerFactory.getLogger(getClass)
 
   def getLastUpdate(): Long = lastUpdate
+
+  def getMaxRowsOffset(): Int = maxRowsOffset
 
   def getOrCreateQueryString(): Option[String] = {
     createQueryString()
@@ -42,7 +45,13 @@ abstract class TableQuerier(mode: String, tableOrQuery: String,
 
       val batchMaxRows = config.batchMaxRows
       resultList = getOrCreateJdbcClient().get.executeQuery(schema, queryString.get,
-        0, batchMaxRows)
+        maxRowsOffset, batchMaxRows)
+      // if the result list has the batchMaxRows, assume there are some more rows to read
+      if (!resultList.isEmpty && resultList.get.size == batchMaxRows) {
+        maxRowsOffset += batchMaxRows
+      } else {
+        maxRowsOffset = 0
+      }
       log.info(resultList.size.toString)
     }
   }
