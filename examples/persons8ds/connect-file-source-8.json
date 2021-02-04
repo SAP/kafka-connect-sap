@@ -1,0 +1,10 @@
+{
+    "name": "test-topic-8-source",
+    "config": {
+        "connector.class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
+        "tasks.max": "1",
+        "topic": "test_topic_8",
+        "file": "/tmp/file-topic-8.txt",
+        "value.converter": "org.apache.kafka.connect.storage.StringConverter"
+    }
+}
