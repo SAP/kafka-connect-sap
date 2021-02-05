@@ -1,4 +1,4 @@
-### Example inventory7db: kafka-hana-connect using debezium record state extraction to HANA
+### Example inventory7db: kafka-hana-connect using debezium record state extraction from MySQL to HANA
 
 This example uses Debezium MySQL connector and HANA connector to copy tables from MySQL to HANA using table change events or CDC events. Concretely, the table change events are extracted from MySQL database by MySQL connector. There change event records are sent to HANA connector, where each record is transformed into a series of normal records by Debezium's [Event Flattening transformation](https://debezium.io/docs/configuration/event-flattening/) and subsequently the corresponding record is inserted, updated, or deleted in the corresponding HANA table.
 
