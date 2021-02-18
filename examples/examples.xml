@@ -34,7 +34,6 @@
                 <include>persons8ds/**/*</include>
                 <include>inventory7db/**/*</include>
                 <include>inventory8db/**/*</include>
- <!--   not working   <include>inventory9db/**/*</include>-->
             </includes>
             <excludes>
                 <exclude>**/target</exclude>
