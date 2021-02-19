@@ -1,16 +1,16 @@
 {
-  "name": "inventory-mysql-source",  
-  "config": {  
+  "name": "inventory-mysql-source",
+  "config": {
     "connector.class": "io.debezium.connector.mysql.MySqlConnector",
-    "tasks.max": "1",  
-    "database.hostname": "mysql",  
+    "tasks.max": "1",
+    "database.hostname": "mysql",
     "database.port": "3306",
     "database.user": "${file:/kafka/custom-config/secrets.properties:connection2-user}",
     "database.password": "${file:/kafka/custom-config/secrets.properties:connection2-password}",
-    "database.server.id": "184054",  
-    "database.server.name": "dbserver1",  
-    "database.include.list": "inventory",  
-    "database.history.kafka.bootstrap.servers": "kafka:9092",  
-    "database.history.kafka.topic": "schema-changes.inventory"  
+    "database.server.id": "184054",
+    "database.server.name": "dbserver1",
+    "database.include.list": "inventory",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.inventory"
   }
 }

@@ -1,0 +1,14 @@
+{
+  "name": "inventory-postgres-source",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "tasks.max": "1",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "${file:/kafka/custom-config/secrets.properties:connection2-user}",
+    "database.password": "${file:/kafka/custom-config/secrets.properties:connection2-password}",
+    "database.dbname": "postgres",
+    "database.server.name": "dbserver2",
+    "schema.include.list": "inventory"
+  }
+}

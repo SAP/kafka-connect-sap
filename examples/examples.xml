@@ -31,6 +31,9 @@
                 <include>persons4ds/**/*</include>
                 <include>persons4db/**/*</include>
                 <include>persons4ks/**/*</include>
+                <include>persons8ds/**/*</include>
+                <include>inventory7db/**/*</include>
+                <include>inventory8db/**/*</include>
             </includes>
             <excludes>
                 <exclude>**/target</exclude>
