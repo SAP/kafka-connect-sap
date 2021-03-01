@@ -21,6 +21,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
   protected var incr2LoadTask: HANASourceTask = _
   protected var incrQueryLoadTask: HANASourceTask = _
   protected var maxrowsLoadTask: HANASourceTask = _
+  protected var maxrowsIncrLoadTask: HANASourceTask = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -30,6 +31,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     incrQueryLoadTask = new HANASourceTask(time, jdbcClient)
     multiTableLoadTask = new HANASourceTask(time, jdbcClient)
     maxrowsLoadTask = new HANASourceTask(time, jdbcClient)
+    maxrowsIncrLoadTask = new HANASourceTask(time, jdbcClient)
 
     jdbcClient.createTable(Some("TEST"),
       SINGLE_TABLE_NAME_FOR_BULK_LOAD.split("\\.")(1).replace("\"", ""),
@@ -56,6 +58,10 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA),
         new Field("name", 2, Schema.STRING_SCHEMA))), 3000)
     jdbcClient.createTable(Some("TEST"),
+      SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD.split("\\.")(1).replace("\"", ""),
+      MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA))),
+      3000)
+    jdbcClient.createTable(Some("TEST"),
       FIRST_TABLE_NAME_FOR_MULTI_LOAD.split("\\.")(1).replace("\"", ""),
       MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA))), 3000)
     jdbcClient.createTable(Some("TEST"),
@@ -76,6 +82,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       statement.execute("drop table " + SECOND_TABLE_NAME_FOR_MULTI_LOAD)
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_LOAD)
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR2_LOAD)
+      statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD)
     } finally {
       connection.close()
     }
@@ -400,6 +407,43 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     }
   }
 
+  test("incremental column load with iterations by batch.max.row") {
+    val connection = jdbcClient.getConnection
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      val sqlstr = "insert into %s values(%d)"
+      for (i <- 1 to 5) {
+        stmt.execute(sqlstr.format(SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD, i))
+      }
+
+      val expectedSchema = SchemaBuilder.struct().name("expected schema")
+        .field("id", Schema.INT32_SCHEMA)
+      maxrowsIncrLoadTask.initialize(taskContext)
+      maxrowsIncrLoadTask.start(singleTableMaxRowsConfigInIncrementalMode("2"))
+      var expectedData = new Struct(expectedSchema)
+        .put("id", 1)
+
+      // batch.max.rows 2 will require 3 polls to load 5 rows
+      for(i <- 1 to 3){
+        var records = maxrowsIncrLoadTask.poll()
+        assert(records.size() === (i match {
+          case 3 => 1
+          case _ => 2
+        }))
+        verifyRecords(i-1, 2, records, expectedSchema)
+      }
+
+      stmt.execute(sqlstr.format(SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD, 6))
+      var records = maxrowsIncrLoadTask.poll()
+      assert(records.size() === 1)
+      assert(maxrowsIncrLoadTask.poll() === null)
+
+    } finally {
+      connection.close()
+    }
+  }
+
   private def compareSchema(expectedSchema: Schema, actualSchema: Schema): Unit = {
     val expectedFields = expectedSchema.fields()
     val actualFields = actualSchema.fields()
@@ -486,4 +530,22 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
     props
   }
+
+  protected def singleTableMaxRowsConfigInIncrementalMode(maxRows: String): java.util.Map[String, String] = {
+    val props = new util.HashMap[String, String]()
+
+    props.put("connection.url", TEST_CONNECTION_URL)
+    props.put("connection.user", "sa")
+    props.put("connection.password", "sa")
+    props.put("mode", "incrementing")
+    props.put("batch.max.rows", maxRows)
+    props.put("topics", TOPIC)
+    props.put(s"$TOPIC.table.name", SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD)
+    props.put(s"$TOPIC.partition.count", "1")
+    props.put(s"$TOPIC.poll.interval.ms", "60000")
+    props.put(s"$TOPIC.incrementing.column.name", "id")
+
+    props
+  }
+
 }
