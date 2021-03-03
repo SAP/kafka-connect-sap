@@ -41,7 +41,10 @@ abstract class TableQuerier(mode: String, tableOrQuery: String,
   def maybeStartQuery(): Unit = {
     if (resultList.isEmpty) {
       schema = getSchema()
-      queryString = getOrCreateQueryString()
+      // update the query when there is no left over records from the previous query
+      if (maxRowsOffset == 0) {
+        queryString = getOrCreateQueryString()
+      }
 
       val batchMaxRows = config.batchMaxRows
       resultList = getOrCreateJdbcClient().get.executeQuery(schema, queryString.get,
