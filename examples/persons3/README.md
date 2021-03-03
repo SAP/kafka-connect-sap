@@ -11,7 +11,7 @@ This example is similar to example [persons2](../persons2/README.md) but example
 
 #### Running
 
-This description assumes Kafka 2.4.1 is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
+This description assumes Kafka 2.4.1 or newer is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
 
 
 ##### Steps 1-2: Follow Steps 1 and 2 of [persons1 example](../person1/README.md).

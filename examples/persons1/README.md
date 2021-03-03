@@ -10,7 +10,7 @@ This example shows a simple batch-mode record transfer between Kafka and HANA us
 
 #### Running
 
-This description assumes Kafka 2.4.1 is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
+This description assumes Kafka 2.4.1 or newer is installed on local machine and environment variables `$KAFKA_HOME` is set to this directory (e.g. `/usr/local/opt/kafka_2.12-2.4.1`) and `$KAFKA_CONNECT_SAP` is set to this repository's root directory.
 
 
 ##### Step 1: Start Zookeeper and Kafka
@@ -37,16 +37,20 @@ $ mkdir -p $KAFKA_HOME/plugins/kafka-connector-hana
 $
 ```
 
-Assuming this project has been built (see Building), run `make get_libs` to place the required jar files including the HANA jdbc driver into directory 'target'.
+Run `make get_libs` to place the required jar files including the HANA jdbc driver into directory 'target'.
 
 ```
 $ make get_libs
 Getting jar files into target ...
 ...
 $ ls target
-kafka-connector-hana-1.0.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
+ngdbc-2.5.49.jar
 $
 ```
+
+Download from https://github.com/SAP/kafka-connect-sap/releases the kafka-connector-hana_2.12-x.x.x.jar file that is suitable for your Kafka version and save it in `target` directory.
+
+
 Copy those jar files into `$KAFKA_HOME/plugins/kafka-connector-hana` directory.
 
 ```

@@ -29,13 +29,15 @@ avro-1.9.2.jar                                     jersey-media-json-binding-2.2
 cdi-api-2.0.jar                                    jersey-mp-config-2.29.1.jar
 geronimo-config-impl-1.2.2.jar                     jersey-mp-rest-client-2.29.1.jar
 guava-27.0.1-jre.jar                               jersey-server-2.29.1.jar
-jakarta.json-1.1.5.jar                             kafka-connector-hana-1.0.0-SNAPSHOT.jar
-jakarta.json-api-1.1.5.jar                         microprofile-config-api-1.4.jar
-jakarta.json.bind-api-1.0.2.jar                    microprofile-rest-client-api-1.4.0.jar
-javax.interceptor-api-1.2.jar                      ngdbc-2.5.49.jar
-jersey-cdi1x-2.29.1.jar                            yasson-1.0.3.jar
+jakarta.json-1.1.5.jar                             microprofile-config-api-1.4.jar
+jakarta.json-api-1.1.5.jar                         microprofile-rest-client-api-1.4.0.jar
+jakarta.json.bind-api-1.0.2.jar                    ngdbc-2.5.49.jar
+javax.interceptor-api-1.2.jar                      yasson-1.0.3.jar
+jersey-cdi1x-2.29.1.jar                            
 $ 
 ```
+
+Download from https://github.com/SAP/kafka-connect-sap/releases the kafka-connector-hana_2.12-x.x.x.jar file that is suitable for your Kafka version and save it in `target` directory.
 
 Next, run `make build_docker` to build the Docker image using debezium's Kafka-Connect image and add the jar files to its plugins directory.
 

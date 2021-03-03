@@ -21,9 +21,11 @@ $ make get_libs
 Getting jar files into target ...
 $
 $ ls target 
-kafka-connector-hana-1.0-SNAPSHOT.jar  ngdbc-2.5.49.jar
+ngdbc-2.5.49.jar
 $
 ```
+
+Download from https://github.com/SAP/kafka-connect-sap/releases the kafka-connector-hana_2.12-x.x.x.jar file that is suitable for your Kafka version and save it in `target` directory.
 
 Next, run `make build_docker` to build the Docker image using strimzi's Kafka image and add the jar files to its plugins directory.
 

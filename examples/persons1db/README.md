@@ -22,9 +22,11 @@ Getting jar files into target ...
 $
 $ ls target 
 guava-20.0.jar                       ngdbc-2.5.49.jar
-kafka-connector-hana-1.0.0-SNAPSHOT.jar
 $
 ```
+
+Download the appropriate kafka-connector-hana_2.12-x.x.x.jar file from https://github.com/SAP/kafka-connect-sap/releases and save it in `target` directory.
+
 
 Next, run `make build_docker` to build the Docker image using debezium's Kafka Connect image and add the jar files to its plugins directory.
 
