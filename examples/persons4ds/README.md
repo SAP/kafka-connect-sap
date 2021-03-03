@@ -46,7 +46,7 @@ $ make docker_build
 Building docker image ...
 docker build . -t strimzi-connector-hana-min
 Sending build context to Docker daemon  1.423MB
-Step 1/5 : FROM strimzi/kafka:0.19.0-kafka-2.4.1
+Step 1/5 : FROM strimzi/kafka:0.20.1-kafka-2.6.0
  ---> a0be3ed644fc
 Step 2/5 : USER root:root
  ---> Using cache
