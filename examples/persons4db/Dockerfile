@@ -1,4 +1,4 @@
-FROM debezium/connect:1.2
+FROM debezium/connect:1.4.2.Final
 USER root:root
 
 RUN mkdir -p /kafka/connect/kafka-connector-hana

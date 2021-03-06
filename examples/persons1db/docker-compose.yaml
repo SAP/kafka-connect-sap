@@ -3,12 +3,12 @@ version: '2'
 services:
 
   zookeeper:
-    image: debezium/zookeeper:1.2
+    image: debezium/zookeeper:1.4.2.Final
     ports:
     - 2181:2181
 
   kafka:
-    image: debezium/kafka:1.2
+    image: debezium/kafka:1.4.2.Final
     depends_on:
     - zookeeper
     ports:

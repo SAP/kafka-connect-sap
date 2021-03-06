@@ -36,7 +36,7 @@ $ make docker_build
 Building docker image ...
 docker build . -t debezium-connector-hana-min
 Sending build context to Docker daemon  3.868MB
-Step 1/5 : FROM debezium/connect:1.2
+Step 1/5 : FROM debezium/connect:1.4.2.Final
  ---> 66f074fce2f0
 Step 2/5 : USER root:root
  ---> Using cache

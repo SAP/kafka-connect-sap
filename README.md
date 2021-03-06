@@ -12,7 +12,7 @@ Table of contents
 * [QuickStart](#quickstart)
 * [Configuration](#configuration)
 * [Examples](#examples)
-
+* [Compatibility](#compatibility)
 
 ## Install
 
@@ -157,6 +157,10 @@ We welcome comments, questions, and bug reports. Please [create an issue](https:
 ## Contributing
 
 Contributions are accepted by sending Pull Requests to this repo. Please do not forget to sign the [Contribution License Agreement](https://cla-assistant.io/SAP/kafka-connect-sap).
+
+## Compatibility
+
+[compatiblity-matrix.txt](./compatiblity-matrix.txt)
 
 ## Todos
 
