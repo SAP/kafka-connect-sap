@@ -184,6 +184,34 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
     }
   }
 
+  def alterTable(namespace: Option[String],
+                  tableName: String,
+                  tableSchema: MetaSchema): Unit = {
+    ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
+      new HANAJdbcException(s"Altering of table $tableName failed")) { () =>
+      val testSchema = HANASchemaBuilder.avroToHANASchema(tableSchema)
+      val fullTableName = tableWithNamespace(namespace, tableName)
+      val fixedSchema = VARCHAR_STAR_R.replaceAllIn(testSchema, "$1(5000)")
+
+      // currently only supporting ALTER ADD
+      val query = s"""ALTER TABLE $fullTableName ADD ($fixedSchema)"""
+
+      log.info(s"Altering table:$tableName with SQL: $query")
+      val connection = getConnection
+      val stmt = connection.createStatement()
+      Try(stmt.execute(query)) match {
+        case Failure(ex) => log.error("Error during table alteration", ex)
+          stmt.close()
+          connection.close()
+          throw ex
+        case _ =>
+          stmt.close()
+          connection.commit()
+          connection.close()
+      }
+    }
+  }
+
   def createCollection(collectionName: String): Unit = {
     ExecuteWithExceptions[Unit, Exception, HANAJdbcException] (
       new HANAJdbcException(s"Creation of collection $collectionName failed")) { () =>

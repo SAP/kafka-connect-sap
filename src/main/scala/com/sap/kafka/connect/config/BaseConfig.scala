@@ -40,6 +40,12 @@ abstract class BaseConfig(props: Map[String, String]) {
   def autoCreate = props.getOrElse[String]("auto.create", "false").toBoolean
 
   /**
+    * Auto evolve HANA tables if table requires some changes to match the record for Sink.
+    * Default is false.
+    */
+  def autoEvolve = props.getOrElse[String]("auto.evolve", "false").toBoolean
+
+  /**
     * Max rows to include in a single batch call for source. Should be an integer.
     * Default is 100.
     */
