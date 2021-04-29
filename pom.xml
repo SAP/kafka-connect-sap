@@ -193,6 +193,12 @@
     </modules>
     <profiles>
         <profile>
+            <id>fastinstall</id>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+        <profile>
             <id>release</id>
             <build>
                 <plugins>

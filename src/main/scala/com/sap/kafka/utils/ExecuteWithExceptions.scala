@@ -21,7 +21,7 @@ object ExecuteWithExceptions {
     */
   def defaultThrowException[TE <: Exception, BE <: ConnectorException](exception: TE,
                                                                        connectorException: BE): BE = {
-    log.error(connectorException.getMessage)
+    log.error(exception.getMessage)
     connectorException.initCause(exception)
     connectorException
   }

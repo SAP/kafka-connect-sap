@@ -19,23 +19,9 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
 
   protected val driver: String = "com.sap.db.jdbc.Driver"
 
-  private val CONNECTION_FAIL_R = ".*Failed to open connection.*".r
   private val VARCHAR_STAR_R = "(?i)(n?varchar)\\(\\*\\)".r
 
   private val calendarUTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-
-  /**
-   * Checks whether the provided exception is a connection opening failure one.
-   * This method is marked as protected in order to be overrideable in the tests.
-   *
-   * @param ex The exception to check
-   * @return `true` if the exception is a connection failure one, `false` otherwise
-   */
-  protected def isFailedToOpenConnectionException(ex: Throwable): Boolean = ex match {
-    case e if e.getMessage == null => false
-    case _: RuntimeException => CONNECTION_FAIL_R.pattern.matcher(ex.getMessage).matches()
-    case _ => false
-  }
 
   /**
    * Returns a fully qualified table name.
@@ -78,11 +64,8 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
          case Success(conn) =>
            conn.setAutoCommit(false)
            conn
-         case Failure(ex) if isFailedToOpenConnectionException(ex) =>
-           throw new HANAJdbcConnectionException(s"Opening a connection failed")
          case Failure(ex) =>
-           /* Make a distinction between bad state and network failure */
-           throw new HANAJdbcBadStateException("Cannot acquire a connection")
+           throw new HANAJdbcConnectionException(s"Opening a connection failed: ${ex.getMessage}")
        }
      }
   }
