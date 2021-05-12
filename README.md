@@ -103,7 +103,9 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
 
   * `topics` - This setting can be used to specify `a comma-separated list of topics`. Must not have spaces.
 
-  * `auto.create` - This setting allows creation of a new table in SAP DBs if the table specified in `{topic}.table.name` does not exist. Should be a `Boolean`. Default is `false`.
+  * `auto.create` - This setting allows the creation of a new table in SAP DBs if the table specified in `{topic}.table.name` does not exist. Should be a `Boolean`. Default is `false`.
+
+  * `auto.evolve` - This setting allows the evolution of the table schema with some restriction, namely when the record contains additional nullable fields that are not present previously, the corresponding columns will be added. In contrast, when the record contains less fields, the table schema will not be changed. Should be a `Boolean`. Default is `false`.
 
   * `batch.size` - This setting can be used to specify the number of records that can be pushed into SAP DB table in a single flush. Should be an `Integer`. Default is `3000`.
 

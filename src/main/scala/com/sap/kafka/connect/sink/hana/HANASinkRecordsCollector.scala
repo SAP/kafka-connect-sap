@@ -54,8 +54,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
       return
     }
     val allFields = mutable.Set[String]()
-    initTableConfig(getTableName._1,getTableName._2, recordHead.topic()) match
-    {
+    initTableConfig(getTableName._1,getTableName._2, recordHead.topic()) match {
       case true =>
         log.info(s"""Table $tableName exists. Validate the schema and check if schema needs to evolve""")
         var recordFields = Seq[metaAttr]()
@@ -81,26 +80,36 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
             }
           }
         }
-        if(config.topicProperties(recordHead.topic())("table.type") != BaseConfigConstants.COLLECTION_TABLE_TYPE
-          //REVISIT couldn't we just use !java.util.Objects.equals(metaSchema, recordFields)?
-          && !compareSchema(recordFields))
-          {
-            log.error(
-              s"""Table $tableName has a different schema from the record Schema.
-                 |Auto Evolution of schema is not supported""".stripMargin)
-            throw new SchemaNotMatchedException(
-              s"""Table $tableName has a different schema from the Record Schema.
-                 |Auto Evolution of schema is not supported
-               """.stripMargin)
+        if (config.topicProperties(recordHead.topic())("table.type") != BaseConfigConstants.COLLECTION_TABLE_TYPE) {
+          compareSchema(recordFields) match {
+            case Some(alts) => if (!alts.isEmpty) {
+              if (config.autoEvolve) {
+                val altsMetaSchema = new MetaSchema(Seq[metaAttr](), Seq[Field]())
+                for (altfield <- alts) {
+                  val field = recordSchema.valueSchema.field(altfield.name)
+                  metaSchema.fields :+= altfield
+                  altsMetaSchema.fields :+= altfield
+                  altsMetaSchema.avroFields :+= field
+                }
+                client.alterTable(getTableName._1, getTableName._2, altsMetaSchema)
+              } else {
+                val errmsg = s"""Table $tableName has a different schema from the record Schema.
+                                |Set 'auto.evolve' parameter to true""".stripMargin
+                log.error(errmsg)
+                throw new SchemaNotMatchedException(errmsg)
+              }
+            }
+            case None =>
+              val errmsg = s"""Table $tableName has an incompatible schema to the record Schema.
+                            |Auto Evolution of schema is not supported""".stripMargin
+              log.error(errmsg)
+              throw new SchemaNotMatchedException(errmsg)
           }
+        }
       case false =>
         if (config.autoCreate) {
           // find table type
-          val tableType = if (config.topicProperties(recordHead.topic())
-            .get("table.type").get == "column")
-            true
-          else false
-
+          val tableType = config.topicProperties(recordHead.topic()).get("table.type").get == BaseConfigConstants.COLUMN_TABLE_TYPE
           // find partition type
           val partitionType = config.topicProperties(recordHead.topic())
             .get("table.partition.mode").get
@@ -202,19 +211,33 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     keys.filter(key => fields.contains(key))
   }
 
-  private def compareSchema(dbSchema : Seq[metaAttr]): Boolean = {
-    val fieldNames = metaSchema.fields.map(_.name)
-    if(metaSchema.fields.size != dbSchema.size)
-      false
-    else
-      {
-        for (field <- dbSchema) {
-          if (!fieldNames.contains(field.name)){
-           return false
-          }
-        }
-      true
+  // Compares the specified schema against the current schema and returns an empty set, a set with some fields, or None.
+  // An empty set if the specified schema is fully compatible with the current schema
+  // (no unknown fields appear in the specified schema, all nonNullable fields of the current schema
+  //  appear in the specified schema, the field data types are identical)
+  // A set with some fields if the specified schema compatible except there are additional nullable fields
+  // None if the specifled schema is incompatible
+  private def compareSchema(dbSchema : Seq[metaAttr]): Option[Set[metaAttr]] = {
+    val fieldNames = metaSchema.fields.map(_.name).toSet
+    val fieldTypes = metaSchema.fields.map(a => a.name -> a.dataType).toMap
+    var nonNullables = metaSchema.fields.filter(a => a.isNullable == 0).map(_.name).toSet
+    var alts = Seq[metaAttr]()
+    for (field <- dbSchema) {
+      if (!fieldNames.contains(field.name)) {
+        alts :+= field
+      } else if (field.dataType != fieldTypes.get(field.name).get) {
+        // incompatible as the datatype is not identical (should we support this case using casting?)
+        return None
       }
+      if (nonNullables.contains(field.name)) {
+        nonNullables -= field.name
+      }
+    }
+    if (!nonNullables.isEmpty) {
+      // incompatible as some nonNullables are not set
+      return None
+    }
+    // compatible
+    return Some(alts.toSet)
   }
-
 }

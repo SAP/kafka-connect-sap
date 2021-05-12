@@ -63,6 +63,12 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     .field("name", Schema.STRING_SCHEMA)
   val valueNoKey = new Struct(valueNoKeySchema).put("name", "homer")
 
+  val valueEvolvedSchema = SchemaBuilder.struct()
+    .name("schema for single table with evolve-after")
+    .field("id", Schema.INT32_SCHEMA)
+    .field("name", Schema.OPTIONAL_STRING_SCHEMA)
+  val valueEvolved = new Struct(valueEvolvedSchema).put("id", 24).put("name", "homer")
+
   test("sink create and insert(default)") {
     verifySinkTask(null, null, null, valueSchema, value)
   }
@@ -95,6 +101,14 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     verifySinkTaskWithDelete(BaseConfigConstants.INSERT_MODE_INSERT, "true", keySchema, key, valueDeletableSchema, valueDeleted)
   }
 
+  test("sink alter with evolve-disabled") {
+    verifySinkTaskWithAlter(null, valueSchema, value, valueEvolvedSchema, valueEvolved)
+  }
+
+  test("sink alter with evolve-enabled") {
+    verifySinkTaskWithAlter("true", valueSchema, value, valueEvolvedSchema, valueEvolved)
+  }
+
   def verifySinkTask(insertMode: String, keySchema: Schema, key: Any, valueSchema: Schema, value: Any): Unit = {
     mockTaskContext = mock(classOf[SinkTaskContext])
     mockConnection = mock(classOf[Connection])
@@ -122,7 +136,7 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     val task: HANASinkTask = new HANASinkTask()
     task.initialize(mockTaskContext)
 
-    task.start(singleTableConfig(keySchema != null, insertMode, "false"))
+    task.start(singleTableConfig(keySchema != null, insertMode, "false", null))
 
     task.put(Collections.singleton(new SinkRecord(TOPIC, 1, keySchema, key, valueSchema, value, 0)))
 
@@ -190,7 +204,7 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     val task: HANASinkTask = new HANASinkTask()
     task.initialize(mockTaskContext)
 
-    task.start(singleTableConfig(keySchema != null, insertMode, deleteEnabled))
+    task.start(singleTableConfig(keySchema != null, insertMode, deleteEnabled, null))
 
     // assuming a tombstone record is generated
     task.put(util.Arrays.asList(
@@ -230,8 +244,71 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     verify(mockPreparedStatement).close()
   }
 
+  def verifySinkTaskWithAlter(evolveEnabled: String, valueSchemaBefore: Schema, valueBefore: Any, valueSchemaAfter: Schema, valueAfter: Any): Unit = {
+    mockTaskContext = mock(classOf[SinkTaskContext])
+    mockConnection = mock(classOf[Connection])
+    mockStatement = mock(classOf[Statement])
+    mockPreparedStatement = mock(classOf[PreparedStatement])
+    val mockPreparedStatement2 = mock(classOf[PreparedStatement])
+    val mockDatabaseMetaData = mock(classOf[DatabaseMetaData])
+    val mockResultSetTableExists = mock(classOf[ResultSet])
+    val mockResultSetSelectMetaData = mock(classOf[ResultSet])
+    val mockResultSetMetaData = mock(classOf[ResultSetMetaData])
 
-  protected def singleTableConfig(useKey: Boolean, insertMode: String, deleteEnabled: String): java.util.Map[String, String] = {
+    when(mockDriver.connect(ArgumentMatchers.anyString, ArgumentMatchers.any(classOf[java.util.Properties]))).thenReturn(mockConnection)
+    when(mockConnection.getMetaData).thenReturn(mockDatabaseMetaData)
+    when(mockResultSetTableExists.next()).thenReturn(true)
+    when(mockDatabaseMetaData.getTables(null, "TEST", "EMPLOYEES_SINK", null)).thenReturn(mockResultSetTableExists)
+    when(mockConnection.createStatement).thenReturn(mockStatement)
+
+    when(mockStatement.execute(ArgumentMatchers.anyString)).thenReturn(true)
+    when(mockStatement.executeQuery(ArgumentMatchers.anyString)).thenReturn(mockResultSetSelectMetaData)
+    when(mockResultSetSelectMetaData.getMetaData).thenReturn(mockResultSetMetaData)
+    when(mockResultSetMetaData.getColumnCount).thenReturn(1)
+    when(mockResultSetMetaData.getColumnName(1)).thenReturn("id")
+    when(mockResultSetMetaData.getColumnType(1)).thenReturn(Types.INTEGER)
+    when(mockResultSetMetaData.isNullable(1)).thenReturn(ResultSetMetaData.columnNoNulls)
+    val stmt = "INSERT INTO \"TEST\".\"EMPLOYEES_SINK\" (\"id\") VALUES (?)"
+    val stmt2 = "INSERT INTO \"TEST\".\"EMPLOYEES_SINK\" (\"id\", \"name\") VALUES (?, ?)"
+    when(mockConnection.prepareStatement(stmt)).thenReturn(mockPreparedStatement)
+    when(mockConnection.prepareStatement(stmt2)).thenReturn(mockPreparedStatement2)
+
+    val task: HANASinkTask = new HANASinkTask()
+    task.initialize(mockTaskContext)
+
+    task.start(singleTableConfig(keySchema != null, BaseConfigConstants.INSERT_MODE_INSERT, null, evolveEnabled))
+
+    task.put(Collections.singleton(new SinkRecord(TOPIC, 1, null, null, valueSchemaBefore, valueBefore, 0)))
+    if (evolveEnabled != "true") {
+      assertThrows[com.sap.kafka.utils.SchemaNotMatchedException] {
+        task.put(Collections.singleton(new SinkRecord(TOPIC, 1, null, null, valueSchemaAfter, valueAfter, 1)))
+      }
+    } else {
+      task.put(Collections.singleton(new SinkRecord(TOPIC, 1, null, null, valueSchemaAfter, valueAfter, 1)))
+
+      verify(mockConnection, times(4)).setAutoCommit(false)
+      verify(mockStatement).executeQuery("SELECT * FROM \"TEST\".\"EMPLOYEES_SINK\" LIMIT 0")
+      verify(mockStatement).execute("ALTER TABLE \"TEST\".\"EMPLOYEES_SINK\" ADD (\"name\" VARCHAR(5000) NULL)")
+
+      verify(mockConnection).prepareStatement(stmt)
+      verify(mockPreparedStatement).setInt(1, 23)
+      verify(mockPreparedStatement).addBatch()
+      verify(mockPreparedStatement).executeBatch
+      verify(mockPreparedStatement).clearParameters()
+      verify(mockPreparedStatement).close()
+
+      verify(mockConnection).prepareStatement(stmt2)
+      verify(mockPreparedStatement2).setInt(1, 24)
+      verify(mockPreparedStatement2).setString(2, "homer")
+      verify(mockPreparedStatement2).addBatch()
+      verify(mockPreparedStatement2).executeBatch
+      verify(mockPreparedStatement2).clearParameters()
+      verify(mockPreparedStatement2).close()
+    }
+
+  }
+
+  protected def singleTableConfig(useKey: Boolean, insertMode: String, deleteEnabled: String, evolveEnabled: String): java.util.Map[String, String] = {
     val props = new util.HashMap[String, String]()
 
     props.put("connection.url", TEST_CONNECTION_URL)
@@ -249,6 +326,9 @@ class HANASinkTaskTest extends FunSuite with BeforeAndAfterAll {
     }
     if (deleteEnabled != null) {
       props.put(s"$TOPIC.delete.enabled", deleteEnabled)
+    }
+    if (evolveEnabled != null) {
+      props.put("auto.evolve", evolveEnabled)
     }
 
     props
