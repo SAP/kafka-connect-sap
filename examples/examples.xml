@@ -34,6 +34,7 @@
                 <include>persons8ds/**/*</include>
                 <include>inventory7db/**/*</include>
                 <include>inventory8db/**/*</include>
+ <!--   not working and tracked in https://issues.redhat.com/browse/DBZ-3590  <include>inventory9db/**/*</include>-->
             </includes>
             <excludes>
                 <exclude>**/target</exclude>

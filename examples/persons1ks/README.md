@@ -6,7 +6,7 @@ This example is a kubernetes version of example [persons1ds](../persons1ds/READM
 
 - example persons1ds is built
 - Access to HANA
-- Kubernetes(with [Minikube](minikube.md))
+- Access to Kubernetes cluster (e.g. [Minikube](minikube.md))
 
 #### Running
 
@@ -14,18 +14,24 @@ This description assumes Docker and Kubernetes CLI (`kubectl`) are available on 
 
 ##### Step 1: Prepare Docker image for kafka-connector-hana
 
-We use the Docker image built in example [persons1ds](../persons1ds/README.md). To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
+We use the Docker image built in example [persons1ds](../persons1ds/README.md). To make this image available to the Kubernetes cluster, push the image to the Docker regisry used or make the image directly available to the cluster.
 
-Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `kubernetes.docker.internal:5000` when using a local registry with Docker Desktop, `docker.io/<username>` for Docker Hub) 
+Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `docker.io/<username>` for Docker Hub, `kubernetes.docker.internal:5000` when using a local registry)
+
+If you want to tag the image and push it to the registry, use `make docker_tag` and `make docker_push` of the example folder.
 
 ```
 $ cd ../persons1ds
 $ echo $DOCKER_REGISTRY
 kubernetes.docker.internal:5000
-$ 
+$ echo $DOCKER_TAG
+latest
+$
+$ make docker_tag
+docker tag strimzi-connector-hana-min kubernetes.docker.internal:5000/strimzi-connector-hana-min:latest
+$
 $ make docker_push
 Pushing docker image ...
-docker tag strimzi-connector-hana-min kubernetes.docker.internal:5000/strimzi-connector-hana-min:latest
 docker push kubernetes.docker.internal:5000/strimzi-connector-hana-min:latest
 The push refers to repository [kubernetes.docker.internal:5000/strimzi-connector-hana-min]
 62e63530617f: Layer already exists
@@ -34,6 +40,8 @@ latest: digest: sha256:62a0eef8b35fb8cdcb80e807ade2dc774bc16076351ac7124ef873545
 $
 $ cd ../persons1ks
 ```
+
+If you are usign minikube and want to make the image directly available at the cluster, refer to [Minikube](minikube.md).
 
 ##### Step 2: Prepare Kubernetes cluster for kafka-connector-hana
 
@@ -58,7 +66,7 @@ $
 NOTE: `helm install` has different syntax depending on its version v2 or v3. The release name is expected by v3 whereas it is not expected by v2. When using v2, omit the first argument below.
 
 ```
-$ heml version
+$ helm version
 version.BuildInfo{Version:"v3.1.2", GitCommit:"d878d4d45863e42fd5cff6743294a11d28a9abce", GitTreeState:"clean", GoVersion:"go1.13.8"}
 $ helm install my-strimzi-release strimzi/strimzi-kafka-operator -n kafka --version 0.19.0
 NAME: my-strimzi-release
@@ -115,7 +123,12 @@ $
 ```
 
 Install Kafka connect by applying file `kafka-connect-hana-min.yaml`.
-Make sure to adjust the image property value to match the name of the image created in Step 1.
+Make sure to adjust the image property value to match the name of the image created in Step 1 by running the following command.
+
+```
+$ sed -i'' -e "s/image: kubernetes.docker.internal:5000\/strimzi-connector-hana-min/image: $DOCKER_REGISTRY\/strimzi-connector-hana-min:$DOCKER_TAG/" kafka-connect-hana-min.yaml
+$
+```
 
 ```
 $ kubectl apply -f kafka-connect-hana-min.yaml -n kafka

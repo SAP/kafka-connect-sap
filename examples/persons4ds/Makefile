@@ -18,8 +18,12 @@ docker_build:
 	@echo "Building docker image ..."
 	docker build . -t strimzi-connector-hana-rega
 
+.PHONY: docker_tag
+docker_tag:
+	@echo "Tagging docker image ..."
+	docker tag strimzi-connector-hana-rega ${DOCKER_REGISTRY}/strimzi-connector-hana-rega:${DOCKER_TAG}
+
 .PHONY: docker_push
 docker_push:
 	@echo "Pushing docker image ..."
-	docker tag strimzi-connector-hana-rega ${DOCKER_REGISTRY}/strimzi-connector-hana-rega:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/strimzi-connector-hana-rega:${DOCKER_TAG}

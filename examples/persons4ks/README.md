@@ -6,7 +6,7 @@ This example is a kubernetes version of example [persons4ds](../persons4ds/READM
 
 - example persons4ds is built
 - Access to HANA
-- Kubernetes
+- Access to Kubernetes cluster (e.g. [Minikube](../persons1ks/minikube.md))
 
 #### Running
 
@@ -16,17 +16,19 @@ This description assumes Docker and Kubernetes CLI (`kubectl`) are available on 
 
 We use the Docker image built in example [persons1ds](../persons1ds/README.md). To make this image available to the Kubernetes cluster, push the image to the Docker regisry.
 
-Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `kubernetes.docker.internal:5000` when using a local registry with Docker Desktop) 
+Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `docker.io/<username>` for Docker Hub, `kubernetes.docker.internal:5000` when using a local registry) 
 
-
+If you want to tag the image and push it to the registry, use `make docker_tag` and `make docker_push` of the example folder.
 
 ```
 $ cd ../persons4ds
 $ echo $DOCKER_REGISTRY
 kubernetes.docker.internal:5000
-$ make docker_push     
-Pushing docker image ...
+$ make docker_tag
+Tagging docker image ...
 docker tag strimzi-connector-hana-rega kubernetes.docker.internal:5000/strimzi-connector-hana-rega:latest
+$ make docker_push
+Pushing docker image ...
 docker push kubernetes.docker.internal:5000/strimzi-connector-hana-rega:latest
 The push refers to repository [kubernetes.docker.internal:5000/strimzi-connector-hana-rega]
 56de5af4fe79: Layer already exists
@@ -35,6 +37,7 @@ latest: digest: sha256:48930655ad18431f7405f5338e8e1656f5be8cc20f888b3f22b327891
 $
 $ cd ../persons4ks
 ```
+If you are usign minikube and want to make the image directly available at the cluster, refer to [Minikube](../persons1ks/minikube.md).
 
 ##### Step 2: Prepare Kubernetes cluster for kafka-connector-hana
 
@@ -57,8 +60,13 @@ $
 
 Follow step 4 of [persons1ks](../persons1ks/README.md) to install the credential for HANA.
 
-Install Kafka connect by applying file `kafka-connect-hana-raga.yaml`.
+Install Kafka connect by applying file `kafka-connect-hana-rega.yaml`.
 Make sure to adjust the image property value to match the name of the image created in Step 1.
+
+```
+$ sed -i'' -e "s/image: kubernetes.docker.internal:5000\/strimzi-connector-hana-rega/image: $DOCKER_REGISTRY\/strimzi-connector-hana-rega:$DOCKER_TAG/" kafka-connect-hana-rega.yaml
+$
+```
 
 ```
 $ kubectl apply -f kafka-connect-hana-rega.yaml
