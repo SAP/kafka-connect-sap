@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/SAP/kafka-connect-sap.svg?branch=master)](https://travis-ci.org/SAP/kafka-connect-sap)
+[![Build Status](https://travis-ci.com/SAP/kafka-connect-sap.svg?branch=master)](https://travis-ci.com/SAP/kafka-connect-sap)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 # Kafka Connectors for SAP
