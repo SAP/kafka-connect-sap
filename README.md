@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/SAP/kafka-connect-sap.svg?branch=master)](https://travis-ci.com/SAP/kafka-connect-sap)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP/kafka-connect-sap)](https://api.reuse.software/info/github.com/SAP/kafka-connect-sap)
 
 # Kafka Connectors for SAP
 
@@ -168,8 +169,6 @@ Contributions are accepted by sending Pull Requests to this repo. Please do not 
 
 Currently only SAP Hana is supported.
 
-
 ## License
-Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved.
-This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the [LICENSE file](LICENSE).
 
+Copyright (c) 2015-2021 SAP SE or an SAP affiliate company and kafka-connect-sap contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/SAP/kafka-connect-sap).
