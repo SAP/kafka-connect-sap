@@ -3,5 +3,5 @@ Upstream-Name: Kafka Connect SAP
 Source: https://github.com/SAP/kafka-connect-sap
 
 Files: *
-Copyright: 2020 SAP SE or an SAP affiliate company and Kafka Connect SAP contributors
+Copyright: 2015-2021 SAP SE or an SAP affiliate company and kafka-connect-sap contributors
 License: Apache-2.0
