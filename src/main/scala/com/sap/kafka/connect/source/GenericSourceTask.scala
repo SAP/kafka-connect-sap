@@ -2,7 +2,6 @@ package com.sap.kafka.connect.source
 
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
-
 import com.sap.kafka.client.hana.{HANAConfigMissingException, HANAJdbcClient}
 import com.sap.kafka.connect.config.hana.HANAParameters
 import com.sap.kafka.connect.config.{BaseConfig, BaseConfigConstants}
@@ -135,12 +134,11 @@ abstract class GenericSourceTask extends SourceTask {
     log.info("Start polling records from HANA")
     val topic = config.topics.head
 
-    var now = time.milliseconds()
 
     while (!stopFlag.get()) {
+      var now = time.milliseconds()
       val querier = tableQueue.head
 
-      var waitFlag = false
       if (!querier.querying()) {
         if (querier.getMaxRowsOffset() == 0) {
           val nextUpdate = querier.getLastUpdate() +
@@ -149,41 +147,37 @@ abstract class GenericSourceTask extends SourceTask {
 
           if (untilNext > 0) {
             log.info(s"Waiting $untilNext ms to poll from ${querier.toString}")
-            waitFlag = true
             time.sleep(untilNext)
-            now = time.milliseconds()
+            // return from the poll to check the task status
+            return null
           }
         }
       }
+      var results = List[SourceRecord]()
 
-      if (!waitFlag) {
-        var results = List[SourceRecord]()
+      log.info(s"Checking for the next block of results from ${querier.toString}")
+      querier.maybeStartQuery()
 
-        log.info(s"Checking for the next block of results from ${querier.toString}")
-        querier.maybeStartQuery()
+      results ++= querier.extractRecords()
 
-        results ++= querier.extractRecords()
-
-        // dequeue the queierer only if the records are fully polled
-        if (querier.getMaxRowsOffset() == 0) {
-          val removedQuerier = tableQueue.dequeue()
-          assert(removedQuerier == querier)
-        }
-        log.info(s"Closing this query for ${querier.toString}")
-        now = time.milliseconds()
-        querier.close(now)
-        if (querier.getMaxRowsOffset() == 0) {
-          tableQueue.enqueue(querier)
-        }
-
-        if (results.isEmpty) {
-          log.info(s"No updates for ${querier.toString}")
-          return null
-        }
-
-        log.info(s"Returning ${results.size} records for ${querier.toString}")
-        return results.asJava
+      // dequeue the queierer only if the records are fully polled
+      if (querier.getMaxRowsOffset() == 0) {
+        val removedQuerier = tableQueue.dequeue()
+        assert(removedQuerier == querier)
       }
+      log.info(s"Closing this query for ${querier.toString}")
+      querier.close(time.milliseconds())
+      if (querier.getMaxRowsOffset() == 0) {
+        tableQueue.enqueue(querier)
+      }
+
+      if (results.isEmpty) {
+        log.info(s"No updates for ${querier.toString}")
+        return null
+      }
+
+      log.info(s"Returning ${results.size} records for ${querier.toString}")
+      return results.asJava
     }
     null
   }

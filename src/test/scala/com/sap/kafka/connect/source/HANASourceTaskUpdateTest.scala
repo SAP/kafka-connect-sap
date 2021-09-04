@@ -124,6 +124,9 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_BULK_LOAD + "values(2)")
       records = task.poll()
+      //return after waking up to allow the status to be checked before actuall polling
+      assert(records == null)
+      records = task.poll()
       //because this reads everything
       assert(records.size() === 2)
 
@@ -214,6 +217,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_BULK_QUERY_LOAD + "values(2)")
       records = queryLoadTask.poll()
+      assert(records == null)
+      records = queryLoadTask.poll()
       //because this reads everything
       assert(records.size() === 2)
 
@@ -259,6 +264,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       })
 
       stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR_LOAD + "values(2, 'Lukas')")
+      records = incrLoadTask.poll()
+      assert(records == null)
       records = incrLoadTask.poll()
       // because this only takes the delta
       assert(records.size() === 1)
@@ -306,6 +313,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR2_LOAD + "values('2', 'Lukas')")
       records = incr2LoadTask.poll()
+      assert(records == null)
+      records = incr2LoadTask.poll()
       // because this only takes the delta
       assert(records.size() === 1)
 
@@ -351,6 +360,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       })
 
       stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR_QUERY_LOAD + "values(2, 'Lukas')")
+      records = incrQueryLoadTask.poll()
+      assert(records == null)
       records = incrQueryLoadTask.poll()
       // because this only takes the delta
       assert(records.size() === 1)
@@ -399,6 +410,11 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       stmt.execute(sqlstr.format(SINGLE_TABLE_NAME_FOR_BULK_MAXROWS_LOAD, 6))
       for(i <- 1 to 3) {
         var records = maxrowsLoadTask.poll()
+        if (i == 1) {
+          //needs to reset the time for the initial poll
+          assert(records == null)
+          records = maxrowsLoadTask.poll()
+        }
         assert(records.size() === 2)
         verifyRecords(i-1, 2, records, expectedSchema)
       }
@@ -436,6 +452,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       stmt.execute(sqlstr.format(SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD, 6))
       var records = maxrowsIncrLoadTask.poll()
+      assert(records == null)
+      records = maxrowsIncrLoadTask.poll()
       assert(records.size() === 1)
       assert(maxrowsIncrLoadTask.poll() === null)
 

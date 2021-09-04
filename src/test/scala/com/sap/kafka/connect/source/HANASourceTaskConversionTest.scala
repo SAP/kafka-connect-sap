@@ -55,7 +55,10 @@ class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
       connection.setAutoCommit(true)
       val stmt = connection.createStatement()
       stmt.execute("insert into \"TEST\".\"EMPLOYEES_SOURCE\" values(" + sqlValue.toString + ")")
-      val records = task.poll()
+      var records = task.poll()
+      if (records == null) {
+        records = task.poll()
+      }
       validateRecords(records.asScala.toList, convertedSchema, convertedValue)
       stmt.execute("drop table \"TEST\".\"EMPLOYEES_SOURCE\"")
     } finally {
