@@ -90,7 +90,7 @@ class IncrColTableQuerier(mode: String, tableOrQuery: String, tablePartition: In
       if (metaAttr.name.equals(incrementingCol)) {
         metaAttr.dataType match {
           case java.sql.Types.INTEGER | java.sql.Types.BIGINT | java.sql.Types.FLOAT | java.sql.Types.DOUBLE | java.sql.Types.REAL |
-               java.sql.Types.DATE | java.sql.Types.TIME | java.sql.Types.TIMESTAMP |
+               java.sql.Types.DECIMAL | java.sql.Types.DATE | java.sql.Types.TIME | java.sql.Types.TIMESTAMP |
                java.sql.Types.VARCHAR | java.sql.Types.NVARCHAR | java.sql.Types.CHAR | java.sql.Types.NCHAR =>
             incrColumnType = metaAttr.dataType
             return metaAttr.name
