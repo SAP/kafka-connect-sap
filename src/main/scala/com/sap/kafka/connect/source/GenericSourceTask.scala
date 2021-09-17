@@ -2,7 +2,6 @@ package com.sap.kafka.connect.source
 
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
-
 import com.sap.kafka.client.hana.{HANAConfigMissingException, HANAJdbcClient}
 import com.sap.kafka.connect.config.hana.HANAParameters
 import com.sap.kafka.connect.config.{BaseConfig, BaseConfigConstants}
@@ -10,14 +9,15 @@ import com.sap.kafka.connect.source.querier.{BulkTableQuerier, IncrColTableQueri
 import com.sap.kafka.utils.ExecuteWithExceptions
 import org.apache.kafka.common.config.ConfigException
 import org.apache.kafka.common.utils.{SystemTime, Time}
-import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.source.{SourceRecord, SourceTask}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+
 import scala.collection.mutable
 
 abstract class GenericSourceTask extends SourceTask {
+  protected var configRawProperties: Option[util.Map[String, String]] = None
   protected var config: BaseConfig = _
   private val tableQueue = new mutable.Queue[TableQuerier]()
   protected var time: Time = new SystemTime()
@@ -29,6 +29,7 @@ abstract class GenericSourceTask extends SourceTask {
 
   override def start(props: util.Map[String, String]): Unit = {
     log.info("Read records from HANA")
+    configRawProperties = Some(props)
 
     ExecuteWithExceptions[Unit, ConfigException, HANAConfigMissingException] (
       new HANAConfigMissingException("Couldn't start HANASourceTask due to configuration error")) { () =>
@@ -41,31 +42,8 @@ abstract class GenericSourceTask extends SourceTask {
 
     val topics = config.topics
 
-    var tables: List[(String, String)] = Nil
-    if (topics.forall(topic => config.topicProperties(topic).keySet.contains("table.name"))) {
-      tables = topics.map(topic =>
-        (config.topicProperties(topic)("table.name"), topic))
-    }
-
-    var query: List[(String, String)] = Nil
-    if (topics.forall(topic => config.topicProperties(topic).keySet.contains("query"))) {
-      query = topics.map(topic =>
-        (config.topicProperties(topic)("query"), topic))
-    }
-
-    if (tables.isEmpty && query.isEmpty) {
-      throw new ConnectException("Invalid configuration: each HANASourceTask must have" +
-        " one table assigned to it")
-    }
-
     val queryMode = config.queryMode
-
-    val tableOrQueryInfos = queryMode match {
-                              case BaseConfigConstants.QUERY_MODE_TABLE =>
-                                getTables(tables)
-                              case BaseConfigConstants.QUERY_MODE_SQL =>
-                                getQueries(query)
-                            }
+    val tableOrQueryInfos = getTableOrQueryInfos()
 
     val mode = config.mode
     var offsets: util.Map[util.Map[String, String], util.Map[String, Object]] = null
@@ -73,22 +51,22 @@ abstract class GenericSourceTask extends SourceTask {
 
     if (mode.equals(BaseConfigConstants.MODE_INCREMENTING)) {
       val partitions =
-        new util.ArrayList[util.Map[String, String]](tables.length)
+        new util.ArrayList[util.Map[String, String]](tableOrQueryInfos.length)
 
       queryMode match {
         case BaseConfigConstants.QUERY_MODE_TABLE =>
           tableOrQueryInfos.foreach(tableInfo => {
             val partition = new util.HashMap[String, String]()
-            partition.put(SourceConnectorConstants.TABLE_NAME_KEY, tableInfo._3)
+            partition.put(SourceConnectorConstants.TABLE_NAME_KEY, s"${tableInfo._1}${tableInfo._2}")
             partitions.add(partition)
-            incrementingCols :+= config.topicProperties(tableInfo._4)("incrementing.column.name")
+            incrementingCols :+= config.topicProperties(tableInfo._3)("incrementing.column.name")
           })
         case BaseConfigConstants.QUERY_MODE_SQL =>
           tableOrQueryInfos.foreach(queryInfo => {
             val partition = new util.HashMap[String, String]()
             partition.put(SourceConnectorConstants.QUERY_NAME_KEY, queryInfo._1)
             partitions.add(partition)
-            incrementingCols :+= config.topicProperties(queryInfo._4)("incrementing.column.name")
+            incrementingCols :+= config.topicProperties(queryInfo._3)("incrementing.column.name")
           })
 
       }
@@ -100,7 +78,7 @@ abstract class GenericSourceTask extends SourceTask {
       val partition = new util.HashMap[String, String]()
       queryMode match {
         case BaseConfigConstants.QUERY_MODE_TABLE =>
-          partition.put(SourceConnectorConstants.TABLE_NAME_KEY, tableOrQueryInfo._3)
+          partition.put(SourceConnectorConstants.TABLE_NAME_KEY, s"${tableOrQueryInfo._1}${tableOrQueryInfo._2}")
         case BaseConfigConstants.QUERY_MODE_SQL =>
           partition.put(SourceConnectorConstants.QUERY_NAME_KEY, tableOrQueryInfo._1)
         case _ =>
@@ -109,13 +87,11 @@ abstract class GenericSourceTask extends SourceTask {
 
       val offset = if (offsets == null) null else offsets.get(partition)
 
-      val topic = tableOrQueryInfo._4
-
       if (mode.equals(BaseConfigConstants.MODE_BULK)) {
-        tableQueue += new BulkTableQuerier(queryMode, tableOrQueryInfo._1, tableOrQueryInfo._2, topic,
+        tableQueue += new BulkTableQuerier(queryMode, tableOrQueryInfo._1, tableOrQueryInfo._2, tableOrQueryInfo._3,
           config, Some(jdbcClient))
       } else if (mode.equals(BaseConfigConstants.MODE_INCREMENTING)) {
-        tableQueue += new IncrColTableQuerier(queryMode, tableOrQueryInfo._1, tableOrQueryInfo._2, topic,
+        tableQueue += new IncrColTableQuerier(queryMode, tableOrQueryInfo._1, tableOrQueryInfo._2, tableOrQueryInfo._3,
           incrementingCols(count),
           if (offset == null) null else offset.asScala.toMap,
           config, Some(jdbcClient))
@@ -188,11 +164,14 @@ abstract class GenericSourceTask extends SourceTask {
     null
   }
 
-  protected def getTables(tables: List[Tuple2[String, String]])
-  : List[Tuple4[String, Int, String, String]]
-
-  protected def getQueries(query: List[(String, String)])
-  : List[Tuple4[String, Int, String, String]]
+  def getTableOrQueryInfos(): List[Tuple3[String, Int, String]] = {
+    val props = configRawProperties.get
+    props.asScala.filter(p => p._1.startsWith("_tqinfos.") && p._1.endsWith(".name")).map(
+      t => Tuple3(
+        t._2,
+        props.get(t._1.replace("name", "partition")).toInt,
+        props.get(t._1.replace("name", "topic")))).toList
+  }
 
   protected def createJdbcClient(): HANAJdbcClient
 }

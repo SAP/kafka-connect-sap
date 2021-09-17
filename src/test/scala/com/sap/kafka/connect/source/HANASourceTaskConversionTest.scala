@@ -1,6 +1,7 @@
 package com.sap.kafka.connect.source
 
 import com.sap.kafka.client.MetaSchema
+import com.sap.kafka.connect.source.hana.HANASourceConnector
 import org.apache.kafka.connect.data.Schema.Type
 import org.apache.kafka.connect.data.{Field, Schema, Struct}
 import org.apache.kafka.connect.source.SourceRecord
@@ -11,11 +12,14 @@ class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    task.start(singleTableConfig())
+    connector = new HANASourceConnector
+    connector.start(singleTableConfig())
+    task.start(connector.taskConfigs(1).get(0))
   }
 
   override def afterAll(): Unit = {
     task.stop()
+    connector.stop()
     super.afterAll()
   }
 
