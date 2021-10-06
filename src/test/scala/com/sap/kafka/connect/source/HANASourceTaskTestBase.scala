@@ -1,11 +1,10 @@
 package com.sap.kafka.connect.source
 
 import java.util
-
 import com.sap.kafka.client.MetaSchema
 import com.sap.kafka.connect.MockJdbcClient
 import com.sap.kafka.connect.config.hana.HANAParameters
-import com.sap.kafka.connect.source.hana.HANASourceTask
+import com.sap.kafka.connect.source.hana.{HANASourceConnector, HANASourceTask}
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.connect.source.SourceTaskContext
 import org.apache.kafka.connect.storage.OffsetStorageReader
@@ -58,6 +57,7 @@ class HANASourceTaskTestBase extends FunSuite
   protected val SECOND_TOPIC = "test-second-topic"
   protected var time: Time = _
   protected var taskContext: SourceTaskContext = _
+  protected var connector: HANASourceConnector = _
   protected var task: HANASourceTask = _
   protected var jdbcClient: MockJdbcClient = _
 

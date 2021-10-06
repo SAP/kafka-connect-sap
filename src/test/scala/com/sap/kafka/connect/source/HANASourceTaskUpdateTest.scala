@@ -1,9 +1,8 @@
 package com.sap.kafka.connect.source
 
 import java.util
-
 import com.sap.kafka.client.MetaSchema
-import com.sap.kafka.connect.source.hana.HANASourceTask
+import com.sap.kafka.connect.source.hana.{HANASourceConnector, HANASourceTask}
 import org.apache.kafka.connect.data.{Field, Schema, SchemaBuilder, Struct}
 import org.apache.kafka.connect.source.SourceRecord
 import org.scalatest.BeforeAndAfterEach
@@ -101,6 +100,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
   test("bulk periodic load") {
     val connection = jdbcClient.getConnection
+
     try {
       connection.setAutoCommit(true)
       val stmt = connection.createStatement()
@@ -108,7 +108,9 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       val expectedSchema = SchemaBuilder.struct().name("expected schema")
         .field("id", Schema.INT32_SCHEMA)
-      task.start(singleTableConfig())
+      val connector = new HANASourceConnector
+      connector.start(singleTableConfig())
+      task.start(connector.taskConfigs(1).get(0))
       var expectedData = new Struct(expectedSchema)
         .put("id", 1)
 
@@ -140,6 +142,9 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
           expectedSchema)
         count = count + 1
       })
+
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
@@ -162,7 +167,9 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
         .name("expected schema for second table")
         .field("id", Schema.INT32_SCHEMA)
 
-      multiTableLoadTask.start(multiTableConfig())
+      val connector = new HANASourceConnector
+      connector.start(multiTableConfig())
+      multiTableLoadTask.start(connector.taskConfigs(1).get(0))
 
       val expectedDataForFirstTable = new Struct(expectedSchemaForSingleTable)
         .put("id", 1)
@@ -187,6 +194,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
             expectedSchemaForSecondTable)
         }
       })
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
@@ -201,7 +210,9 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       val expectedSchema = SchemaBuilder.struct().name("expected schema")
         .field("id", Schema.INT32_SCHEMA)
-      queryLoadTask.start(singleTableQueryConfig())
+      val connector = new HANASourceConnector
+      connector.start(singleTableQueryConfig())
+      queryLoadTask.start(connector.taskConfigs(1).get(0))
       var expectedData = new Struct(expectedSchema)
         .put("id", 1)
 
@@ -232,6 +243,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
           expectedSchema)
         count = count + 1
       })
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
@@ -248,7 +261,9 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
         .field("id", Schema.INT32_SCHEMA)
         .field("name", Schema.STRING_SCHEMA)
       incrLoadTask.initialize(taskContext)
-      incrLoadTask.start(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR_LOAD, "id"))
+      val connector = new HANASourceConnector
+      connector.start(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR_LOAD, "id"))
+      incrLoadTask.start(connector.taskConfigs(1).get(0))
       var expectedData = new Struct(expectedSchema)
         .put("id", 1)
         .put("name", "Lukas")
@@ -280,6 +295,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
         compareData(expectedData, record.value().asInstanceOf[Struct],
           expectedSchema)
       })
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
@@ -295,8 +312,10 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       val expectedSchema = SchemaBuilder.struct().name("expected schema")
         .field("id", Schema.STRING_SCHEMA)
         .field("name", Schema.STRING_SCHEMA)
+      val connector = new HANASourceConnector
+      connector.start(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR2_LOAD, "id"))
       incr2LoadTask.initialize(taskContext)
-      incr2LoadTask.start(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR2_LOAD, "id"))
+      incr2LoadTask.start(connector.taskConfigs(1).get(0))
       var expectedData = new Struct(expectedSchema)
         .put("id", "1")
         .put("name", "Lukas")
@@ -328,6 +347,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
         compareData(expectedData, record.value().asInstanceOf[Struct],
           expectedSchema)
       })
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
@@ -343,8 +364,10 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       val expectedSchema = SchemaBuilder.struct().name("expected schema")
         .field("id", Schema.INT32_SCHEMA)
         .field("name", Schema.STRING_SCHEMA)
+      val connector = new HANASourceConnector
+      connector.start(singleTableConfigInIncrementalQueryMode())
       incrQueryLoadTask.initialize(taskContext)
-      incrQueryLoadTask.start(singleTableConfigInIncrementalQueryMode())
+      incrQueryLoadTask.start(connector.taskConfigs(1).get(0))
       var expectedData = new Struct(expectedSchema)
         .put("id", 1)
         .put("name", "Lukas")
@@ -376,6 +399,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
         compareData(expectedData, record.value().asInstanceOf[Struct],
           expectedSchema)
       })
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
@@ -393,7 +418,9 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       val expectedSchema = SchemaBuilder.struct().name("expected schema")
         .field("id", Schema.INT32_SCHEMA)
-      maxrowsLoadTask.start(singleTableMaxRowsConfig("2"))
+      val connector = new HANASourceConnector
+      connector.start(singleTableMaxRowsConfig("2"))
+      maxrowsLoadTask.start(connector.taskConfigs(1).get(0))
       var expectedData = new Struct(expectedSchema)
         .put("id", 1)
 
@@ -418,6 +445,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
         assert(records.size() === 2)
         verifyRecords(i-1, 2, records, expectedSchema)
       }
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
@@ -435,8 +464,10 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
       val expectedSchema = SchemaBuilder.struct().name("expected schema")
         .field("id", Schema.INT32_SCHEMA)
+      val connector = new HANASourceConnector
+      connector.start(singleTableMaxRowsConfigInIncrementalMode("2"))
       maxrowsIncrLoadTask.initialize(taskContext)
-      maxrowsIncrLoadTask.start(singleTableMaxRowsConfigInIncrementalMode("2"))
+      maxrowsIncrLoadTask.start(connector.taskConfigs(1).get(0))
       var expectedData = new Struct(expectedSchema)
         .put("id", 1)
 
@@ -457,6 +488,8 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       assert(records.size() === 1)
       assert(maxrowsIncrLoadTask.poll() === null)
 
+      task.stop()
+      connector.stop()
     } finally {
       connection.close()
     }
