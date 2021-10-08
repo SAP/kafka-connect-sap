@@ -107,10 +107,9 @@ We prepare for the connector json files `connect-hana-source-4.json` and `connec
         "connection.password": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-password}",
     ...
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
-        "value.converter.apicurio.registry.url": "http://my-cluster-schema-registry-api:8080/api",
-        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
-        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
-        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+        "value.converter.apicurio.registry.url": "http://registry:8080/apis/registry/v2",
+        "value.converter.apicurio.registry.auto-register": "true",
+        "value.converter.apicurio.registry.find-latest": "true"
     }
 }
 ```
@@ -124,10 +123,9 @@ We prepare for the connector json files `connect-hana-source-4.json` and `connec
         "connection.password": "${file:/opt/kafka/external-configuration/hana-secrets/hana-secrets.properties:connection1-password}",
     ...
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
-        "value.converter.apicurio.registry.url": "http://my-cluster-schema-registry-api:8080/api",
-        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
-        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
-        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+        "value.converter.apicurio.registry.url": "http://registry:8080/apis/registry/v2",
+        "value.converter.apicurio.registry.auto-register": "true",
+        "value.converter.apicurio.registry.find-latest": "true"
     }
 }
 ```

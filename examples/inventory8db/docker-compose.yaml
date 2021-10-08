@@ -3,12 +3,12 @@ version: '2'
 services:
 
   zookeeper:
-    image: debezium/zookeeper:1.4.2.Final
+    image: debezium/zookeeper:1.7.0.Final
     ports:
     - 2181:2181
 
   kafka:
-    image: debezium/kafka:1.4.2.Final
+    image: debezium/kafka:1.7.0.Final
     depends_on:
     - zookeeper
     ports:
@@ -19,7 +19,7 @@ services:
       ZOOKEEPER_CONNECT: zookeeper:2181
 
   postgres:
-    image: debezium/example-postgres:1.3
+    image: debezium/example-postgres:1.7.0.Final
     ports:
     - 5432:5432
     environment:

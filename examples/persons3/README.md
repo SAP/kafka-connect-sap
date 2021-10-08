@@ -24,7 +24,7 @@ This description assumes Kafka 2.4.1 or newer is installed on local machine and 
 In addition to the above steps described in example [persons1](../persons1/README.md), for this example, Apicurio registry must be made available and accessible from the connector. For this example, we use Apicurio registry's docker image. Assuming docker is locally installed, run the following command.
 
 ```
-$ docker run -it --rm -p 8080:8080 apicurio/apicurio-registry-mem:1.2.3.Final
+$ docker run -it --rm -p 8080:8080 apicurio/apicurio-registry-mem:2.0.0.Final
 exec java -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -javaagent:/opt/agent-bond/agent-bond.jar=jmx_exporter{{9779:/opt/agent-bond/jmx_exporter_config.yml}} -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemor
 ...
 ```
@@ -89,19 +89,13 @@ Getting jar files into target ...
 ...
 $
 $ ls target
-apicurio-registry-client-1.2.3.Final.jar           jersey-common-2.29.1.jar
-apicurio-registry-common-1.2.3.Final.jar           jersey-hk2-2.29.1.jar
-apicurio-registry-utils-converter-1.2.3.Final.jar  jersey-media-jaxb-2.29.1.jar
-apicurio-registry-utils-serde-1.2.3.Final.jar      jersey-media-json-binding-2.29.1.jar
-avro-1.9.2.jar                                     jersey-mp-config-2.29.1.jar
-cdi-api-2.0.jar                                    jersey-mp-rest-client-2.29.1.jar
-geronimo-config-impl-1.2.2.jar                     jersey-server-2.29.1.jar
-jakarta.json-1.1.5.jar                             kafka-connector-hana-1.0.0-SNAPSHOT.jar
-jakarta.json-api-1.1.5.jar                         microprofile-config-api-1.4.jar
-jakarta.json.bind-api-1.0.2.jar                    microprofile-rest-client-api-1.4.0.jar
-javax.interceptor-api-1.2.jar                      ngdbc-2.5.49.jar
-jersey-cdi1x-2.29.1.jar                            yasson-1.0.3.jar
-jersey-client-2.29.1.jar
+apicurio-registry-client-2.0.0.Final.jar                   guava-31.0.1-jre.jar
+apicurio-registry-common-2.0.0.Final.jar                   httpclient-4.5.13.jar
+apicurio-registry-serde-common-2.0.0.Final.jar             httpcore-4.4.14.jar
+apicurio-registry-serdes-avro-serde-2.0.0.Final.jar        keycloak-authz-client-12.0.3.jar
+apicurio-registry-serdes-jsonschema-serde-2.0.0.Final.jar  keycloak-common-12.0.3.jar
+apicurio-registry-utils-converter-2.0.0.Final.jar          keycloak-core-12.0.3.jar
+avro-1.10.2.jar
 $ 
 ```
 
@@ -125,8 +119,9 @@ Modify the converter properties as shown below. For the converter's registry.url
 
 ```
 value.converter=io.apicurio.registry.utils.converter.ExtJsonConverter
-value.converter.apicurio.registry.url=http://localhost:8080/api
-value.converter.apicurio.registry.global-id=io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy
+value.converter.apicurio.registry.url=http://localhost:8080/apis/registry/v2
+value.converter.apicurio.registry.auto-register=true
+value.converter.apicurio.registry.find-latest=true
 ```
 
 For the source and sink configuraiton, we modify the configuration for [persons2](../persons2/README.md).

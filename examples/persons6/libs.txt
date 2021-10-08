@@ -1,4 +1,4 @@
-com/sap/cloud/db/jdbc/ngdbc/2.5.49/ngdbc-2.5.49.jar
+com/sap/cloud/db/jdbc/ngdbc/2.10.14/ngdbc-2.10.14.jar
 org/apache/avro/avro/1.9.2/avro-1.9.2.jar
 io/confluent/kafka-connect-avro-converter/5.4.2/kafka-connect-avro-converter-5.4.2.jar
 io/confluent/common-config/5.4.2/common-config-5.4.2.jar

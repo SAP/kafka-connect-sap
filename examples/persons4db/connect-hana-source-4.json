@@ -9,9 +9,8 @@
         "connection.password": "${file:/kafka/custom-config/hana-secrets.properties:connection1-password}",
         "test_topic_4.table.name": "\"<schemaname>\".\"PERSONS4\"",
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
-        "value.converter.apicurio.registry.url": "http://registry:8080/api",
-        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
-        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
-        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+        "value.converter.apicurio.registry.url": "http://registry:8080/apis/registry/v2",
+        "value.converter.apicurio.registry.auto-register": "true",
+        "value.converter.apicurio.registry.find-latest": "true"
     }
 }
