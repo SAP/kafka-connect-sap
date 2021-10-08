@@ -3,12 +3,12 @@ version: '2'
 services:
 
   zookeeper:
-    image: debezium/zookeeper:1.4.2.Final
+    image: debezium/zookeeper:1.7.0.Final
     ports:
     - 2181:2181
 
   kafka:
-    image: debezium/kafka:1.4.2.Final
+    image: debezium/kafka:1.7.0.Final
     depends_on:
     - zookeeper
     ports:
@@ -19,7 +19,7 @@ services:
       ZOOKEEPER_CONNECT: zookeeper:2181
 
   registry:
-    image: apicurio/apicurio-registry-mem:1.2.3.Final
+    image: apicurio/apicurio-registry-mem:2.0.0.Final
     depends_on:
     - kafka
     ports:

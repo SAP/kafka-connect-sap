@@ -35,10 +35,11 @@ Modify the converter properties as shown below. For the converter's registry.url
 
 ```
 value.converter=io.apicurio.registry.utils.converter.AvroConverter
-value.converter.apicurio.registry.url=http://localhost:8080/api
+value.converter.apicurio.registry.url=http://localhost:8080/apis/registry/v2
+value.converter.apicurio.registry.auto-register=true
+value.converter.apicurio.registry.find-latest=true
 value.converter.apicurio.registry.converter.serializer=io.apicurio.registry.utils.serde.AvroKafkaSerializer
 value.converter.apicurio.registry.converter.deserializer=io.apicurio.registry.utils.serde.AvroKafkaDeserializer
-value.converter.apicurio.registry.global-id=io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy
 ```
 
 For the source and sink configuraiton, we modify the configuration for [persons2](../persons2/README.md).

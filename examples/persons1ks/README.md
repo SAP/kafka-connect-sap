@@ -16,7 +16,7 @@ This description assumes Docker and Kubernetes CLI (`kubectl`) are available on 
 
 We use the Docker image built in example [persons1ds](../persons1ds/README.md). To make this image available to the Kubernetes cluster, push the image to the Docker regisry used or make the image directly available to the cluster.
 
-Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `docker.io/<username>` for Docker Hub, `kubernetes.docker.internal:5000` when using a local registry)
+Make sure that `DOCKER_REGISTRY` is set to the registry used (e.g., `docker.io/<username>` for Docker Hub, `kubernetes.docker.internal:5000` when using a local registry). 
 
 If you want to tag the image and push it to the registry, use `make docker_tag` and `make docker_push` of the example folder.
 
@@ -167,14 +167,8 @@ Forwarding from [::1]:8083 -> 8083
 You can verify whether Kafka Connect is running using curl from the local system.
 
 ```
-$ curl -i http://localhost:8083/
-HTTP/1.1 200 OK
-Date: Thu, 26 Nov 2020 16:34:18 GMT
-Content-Type: application/json
-Content-Length: 91
-Server: Jetty(9.4.20.v20190813)
-
-{"version":"2.4.1","commit":"c57222ae8cd7866b","kafka_cluster_id":"TUbAajkpT5q9nUckIM62Dg"}
+$ curl http://localhost:8083/
+{"version":"2.8.0","commit":"ebb1d6e21cc92130","kafka_cluster_id":"X_rwAMQ1SKiX3SrBUkZFBQ"}
 $
 ```
 
@@ -215,18 +209,6 @@ You can connect to the Kafka broker pod to directly inspect the topic and consum
 $ kubectl exec -it my-cluster-kafka-0 -n kafka -- bash
 Defaulting container name to kafka.
 Use 'kubectl describe pod/my-cluster-kafka-0 -n kafka' to see all of the containers in this pod.
-[kafka@my-cluster-kafka-0 kafka]$ ls
-LICENSE                            kafka_connect_run.sh                                kafka_run.sh
-NOTICE                             kafka_connect_tls_prepare_certificates.sh           kafka_tls_prepare_certificates.sh
-bin                                kafka_liveness.sh                                   libs
-broker-certs                       kafka_mirror_maker_2_connector_config_generator.sh  s2i
-client-ca-certs                    kafka_mirror_maker_2_run.sh                         set_kafka_gc_options.sh
-cluster-ca-certs                   kafka_mirror_maker_consumer_config_generator.sh     site-docs
-config                             kafka_mirror_maker_liveness.sh                      to_bytes.gawk
-custom-config                      kafka_mirror_maker_producer_config_generator.sh     zookeeper_config_generator.sh
-dynamic_resources.sh               kafka_mirror_maker_run.sh                           zookeeper_healthcheck.sh
-kafka_config_generator.sh          kafka_mirror_maker_tls_prepare_certificates.sh      zookeeper_run.sh
-kafka_connect_config_generator.sh  kafka_pre_start.sh                                  zookeeper_tls_prepare_certificates.sh
 [kafka@my-cluster-kafka-0 kafka]$
 ```
 

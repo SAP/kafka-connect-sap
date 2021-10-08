@@ -21,7 +21,7 @@ $ make get_libs
 Getting jar files into target ...
 $
 $ ls target 
-ngdbc-2.5.49.jar
+ngdbc-2.10.14.jar
 $
 ```
 
@@ -34,7 +34,7 @@ $ make docker_build
 Building docker image ...
 docker build . -t strimzi-connector-hana-min
 Sending build context to Docker daemon  1.423MB
-Step 1/5 : FROM strimzi/kafka:0.20.1-kafka-2.6.0
+Step 1/5 : FROM strimzi/kafka:0.24.0-kafka-2.8.0
  ---> a0be3ed644fc
 Step 2/5 : USER root:root
  ---> Using cache
@@ -74,22 +74,10 @@ Attaching to persons1ds_zookeeper_1, persons1ds_kafka_1, persons1ds_connect_1
 After starting the Docker containers using docker-compose, we can verify whether Kafka Connect is running using curl.
 
 ```
-$ curl -i http://localhost:8083/
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:00:11 GMT
-Content-Type: application/json
-Content-Length: 91
-Server: Jetty(9.4.20.v20190813)
-
-{"version":"2.4.1","commit":"c57222ae8cd7866b","kafka_cluster_id":"wdrDgSAFSbKpWGYm-q0PuQ"}
+$ curl http://localhost:8083/
+{"version":"2.8.0","commit":"ebb1d6e21cc92130","kafka_cluster_id":"OpfSsMGsR3SozA9fA40a-Q"}
 $
-$ curl -i http://localhost:8083/connectors
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:00:39 GMT
-Content-Type: application/json
-Content-Length: 2
-Server: Jetty(9.4.20.v20190813)
-
+$ curl http://localhost:8083/connectors
 []
 $
 ```
@@ -134,33 +122,13 @@ We prepare for the connector json files using the json files `connect-hana-sourc
 Finally, we deploy the connectors by posting the connector configuration json files to the Kafka Connect's API using curl.
 
 ```
-$ curl -i -X POST -H 'content-type:application/json' -d @connect-hana-source-1.json http://localhost:8083/connectors
-HTTP/1.1 201 Created
-Date: Wed, 09 Sep 2020 22:10:34 GMT
-Location: http://localhost:8083/connectors/test-topic-1-source
-Content-Type: application/json
-Content-Length: 399
-Server: Jetty(9.4.20.v20190813)
-
+$ curl -X POST -H 'content-type:application/json' -d @connect-hana-source-1.json http://localhost:8083/connectors
 {"name":"test-topic-1-source","config":{"connector.class":"com.sap.kafka.connect.source.hana.HANASourceConnector","tasks.max":"1","topics":"test_topic_1","connection.url":"jdbc:sap://...
 $
 $ curl -i -X POST -H 'content-type:application/json' -d @connect-hana-sink-1.json http://localhost:8083/connectors
-HTTP/1.1 201 Created
-Date: Wed, 09 Sep 2020 22:11:22 GMT
-Location: http://localhost:8083/connectors/test-topic-1-sink
-Content-Type: application/json
-Content-Length: 414
-Server: Jetty(9.4.20.v20190813)
-
 {"name":"test-topic-1-sink","config":{"connector.class":"com.sap.kafka.connect.sink.hana.HANASinkConnector","tasks.max":"1","topics":"test_topic_1","connection.url":"jdbc:sap://...
 $
 $ curl -i http://localhost:8083/connectors
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:11:54 GMT
-Content-Type: application/json
-Content-Length: 43
-Server: Jetty(9.4.20.v20190813)
-
 ["test-topic-1-source","test-topic-1-sink"]
 ```
 

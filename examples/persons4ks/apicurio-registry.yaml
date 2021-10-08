@@ -15,7 +15,7 @@ spec:
         app: schema-registry
     spec:
       containers:
-        - image: apicurio/apicurio-registry-mem:1.2.3.Final
+        - image: apicurio/apicurio-registry-mem:2.0.0.Final
           name: schema-registry
           resources:
             limits:

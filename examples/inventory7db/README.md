@@ -40,21 +40,9 @@ After starting the Docker containers using docker-compose, we can verify whether
 
 ```
 $ curl -i http://localhost:8083/
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:44:49 GMT
-Content-Type: application/json
-Content-Length: 91
-Server: Jetty(9.4.24.v20191120)
-
-{"version":"2.5.0","commit":"66563e712b0b9f84","kafka_cluster_id":"1NEvm9a4TW2t-f5Jkk4peg"}
+{"version":"2.8.0","commit":"ebb1d6e21cc92130","kafka_cluster_id":"LYeU_8zHQp2304Kds4w1VA"}
 $
 $ curl -i http://localhost:8083/connectors
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:45:35 GMT
-Content-Type: application/json
-Content-Length: 2
-Server: Jetty(9.4.24.v20191120)
-
 []
 $
 ```
@@ -178,25 +166,11 @@ The above configuration uses Debezium's Event Flattening SMT https://debezium.io
 We deploy the connectors by posting the connector configuration json files to the Kafka Connect's API.
 
 ```
-$ curl -i -X POST -H "Content-Type:application/json" -d @connect-mysql-source-7.json http://localhost:8083/connectors/
-HTTP/1.1 201 Created
-Date: Tue, 12 Jan 2021 22:29:00 GMT
-Location: http://localhost:8083/connectors/inventory-mysql-source
-Content-Type: application/json
-Content-Length: 630
-Server: Jetty(9.4.24.v20191120)
-
+$ curl -X POST -H "Content-Type:application/json" -d @connect-mysql-source-7.json http://localhost:8083/connectors/
 {"name":"inventory-mysql-source","config":{"connector.class":"io.debezium.connector.mysql.MySqlConnector","tasks.max":"1","database.hostname":"mysql","database.port":"3306","database.user":"${file:/kafka/custom-config/tmp-secrets.properties:connection2-user}","database.password":"${file:/kafka/custom-config/tmp-secrets.properties:connection2-password}","database.server.id":"184054","d
 ...
 $
-$ curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" -d @tmp-connect-hana-sink-7.json http://localhost:8083/connectors/
-HTTP/1.1 201 Created
-Date: Tue, 12 Jan 2021 22:30:10 GMT
-Location: http://localhost:8083/connectors/inventory-hana-sink
-Content-Type: application/json
-Content-Length: 764
-Server: Jetty(9.4.24.v20191120)
-
+$ curl -X POST -H "Accept:application/json" -H "Content-Type:application/json" -d @connect-hana-sink-7.json http://localhost:8083/connectors/
 {"name":"inventory-hana-sink","config":{"connector.class":"com.sap.kafka.connect.sink.hana.HANASinkConnector","tasks.max":"1","topics":"dbserver1.inventory.customers","connection.url":"jdbc:sap://...
 $
 $ curl http://localhost:8083/connectors/

@@ -1,11 +1,10 @@
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaConnect
 metadata:
   name: my-connect-cluster
   annotations:
     strimzi.io/use-connector-resources: "true"
 spec:
-  version: 2.6.0
   image: kubernetes.docker.internal:5000/strimzi-connector-hana-rega
   replicas: 1
   bootstrapServers: my-cluster-kafka-bootstrap:9092

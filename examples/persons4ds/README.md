@@ -21,19 +21,13 @@ $ make get_libs
 Getting jar files into target ...
 $
 $ ls target 
-apicurio-registry-client-1.2.3.Final.jar           jersey-common-2.29.1.jar
-apicurio-registry-common-1.2.3.Final.jar           jersey-hk2-2.29.1.jar
-apicurio-registry-utils-converter-1.2.3.Final.jar  jersey-media-jaxb-2.29.1.jar
-apicurio-registry-utils-serde-1.2.3.Final.jar      jersey-media-json-binding-2.29.1.jar
-avro-1.9.2.jar                                     jersey-mp-config-2.29.1.jar
-cdi-api-2.0.jar                                    jersey-mp-rest-client-2.29.1.jar
-geronimo-config-impl-1.2.2.jar                     jersey-server-2.29.1.jar
-jakarta.json-1.1.5.jar                             microprofile-config-api-1.4.jar
-jakarta.json-api-1.1.5.jar                         microprofile-rest-client-api-1.4.0.jar
-jakarta.json.bind-api-1.0.2.jar                    ngdbc-2.5.49.jar
-javax.interceptor-api-1.2.jar                      yasson-1.0.3.jar
-jersey-cdi1x-2.29.1.jar                            
-jersey-client-2.29.1.jar
+apicurio-registry-client-2.0.0.Final.jar                   guava-31.0.1-jre.jar
+apicurio-registry-common-2.0.0.Final.jar                   httpclient-4.5.13.jar
+apicurio-registry-serde-common-2.0.0.Final.jar             httpcore-4.4.14.jar
+apicurio-registry-serdes-avro-serde-2.0.0.Final.jar        keycloak-authz-client-12.0.3.jar
+apicurio-registry-serdes-jsonschema-serde-2.0.0.Final.jar  keycloak-common-12.0.3.jar
+apicurio-registry-utils-converter-2.0.0.Final.jar          keycloak-core-12.0.3.jar
+avro-1.10.2.jar                                            ngdbc-2.10.14.jar
 $
 ```
 
@@ -88,22 +82,10 @@ registry_1   | exec java -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager
 After starting the Docker containers using docker-compose, we can verify whether Kafka Connect is running using curl.
 
 ```
-$ curl -i http://localhost:8083/
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:00:11 GMT
-Content-Type: application/json
-Content-Length: 91
-Server: Jetty(9.4.20.v20190813)
-
-{"version":"2.4.1","commit":"c57222ae8cd7866b","kafka_cluster_id":"wdrDgSAFSbKpWGYm-q0PuQ"}
+$ curl http://localhost:8083/
+{"version":"2.8.0","commit":"ebb1d6e21cc92130","kafka_cluster_id":"HECIAPmDQJyky_bOF6iMRQ"}
 $
-$ curl -i http://localhost:8083/connectors
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:00:39 GMT
-Content-Type: application/json
-Content-Length: 2
-Server: Jetty(9.4.20.v20190813)
-
+$ curl http://localhost:8083/connectors
 []
 $
 ```
@@ -120,10 +102,9 @@ We prepare for the connector json files using the json files `connect-hana-sourc
     "config": {
     ...
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
-        "value.converter.apicurio.registry.url": "http://registry:8080/api",
-        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
-        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
-        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+        "value.converter.apicurio.registry.url": "http://registry:8080/apis/registry/v2",
+        "value.converter.apicurio.registry.auto-register": "true",
+        "value.converter.apicurio.registry.find-latest": "true"
     }
 }
 ```
@@ -134,10 +115,9 @@ We prepare for the connector json files using the json files `connect-hana-sourc
     "config": {
     ...
         "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
-        "value.converter.apicurio.registry.url": "http://registry:8080/api",
-        "value.converter.apicurio.registry.converter.serializer": "io.apicurio.registry.utils.serde.AvroKafkaSerializer",
-        "value.converter.apicurio.registry.converter.deserializer": "io.apicurio.registry.utils.serde.AvroKafkaDeserializer",
-        "value.converter.apicurio.registry.global-id": "io.apicurio.registry.utils.serde.strategy.GetOrCreateIdStrategy"
+        "value.converter.apicurio.registry.url": "http://registry:8080/apis/registry/v2",
+        "value.converter.apicurio.registry.auto-register": "true",
+        "value.converter.apicurio.registry.find-latest": "true"
     }
 }
 ```
@@ -145,33 +125,13 @@ We prepare for the connector json files using the json files `connect-hana-sourc
 Finally, we deploy the connectors by posting the connector configuration json files to the Kafka Connect's API using curl.
 
 ```
-$ curl -i -X POST -H 'content-type:application/json' -d @connect-hana-source-4.json http://localhost:8083/connectors
-HTTP/1.1 201 Created
-Date: Wed, 09 Sep 2020 22:10:34 GMT
-Location: http://localhost:8083/connectors/test-topic-4-source
-Content-Type: application/json
-Content-Length: 877
-Server: Jetty(9.4.20.v20190813)
-
+$ curl -X POST -H 'content-type:application/json' -d @connect-hana-source-4.json http://localhost:8083/connectors
 {"name":"test-topic-4-source","config":{"connector.class":"com.sap.kafka.connect.source.hana.HANASourceConnector","tasks.max":"1","topics":"test_topic_4","connection.url":"jdbc:sap://...
 $
 $ curl -i -X POST -H 'content-type:application/json' -d @connect-hana-sink-4.json http://localhost:8083/connectors
-HTTP/1.1 201 Created
-Date: Wed, 09 Sep 2020 22:11:22 GMT
-Location: http://localhost:8083/connectors/test-topic-4-sink
-Content-Type: application/json
-Content-Length: 892
-Server: Jetty(9.4.20.v20190813)
-
 {"name":"test-topic-4-sink","config":{"connector.class":"com.sap.kafka.connect.sink.hana.HANASinkConnector","tasks.max":"1","topics":"test_topic_4","connection.url":"jdbc:sap://...
 $
 $ curl -i http://localhost:8083/connectors
-HTTP/1.1 200 OK
-Date: Wed, 09 Sep 2020 22:11:54 GMT
-Content-Type: application/json
-Content-Length: 43
-Server: Jetty(9.4.20.v20190813)
-
 ["test-topic-4-source","test-topic-4-sink"]
 ```
 
@@ -183,17 +143,10 @@ The above result shows that the connectors are deployed.
 In addition to inspecting Kafka topic and HANA table, you can verify the registered schema at the schema registry using the following command.
 
 ```
-$ curl -i http://localhost:8080/api/artifacts
-HTTP/1.1 200 OK
-Date: Thu, 10 Sep 2020 12:17:36 GMT
-Expires: Wed, 09 Sep 2020 12:17:36 GMT
-Pragma: no-cache
-Cache-control: no-cache, no-store, must-revalidate
-Content-Type: application/json
-Content-Length: 43
-
+$ curl http://localhost:8080/api/artifacts
 ["test_topic_4-value"]
-$ 
+$ curl -i 'http://localhost:8080/apis/registry/v2/search/artifacts?name=test_topic'
+{"artifacts":[{"id":"test_topic_4-value","name":...
 ```
 
 It is noted that this scenario builds the Docker image with the apicurio schema registry usage and runs Kafka Connect in the distributed mode. Additional connectors can be deployed to this Kafka Connect instance.

@@ -79,7 +79,7 @@ minikube image load $DOCKER_REGISTRY/strimzi-connector-hana-min:$DOCKER_TAG
 Another similar approach is to use `docker save` and `docker load` to load the image into Minikube. Assuming the image
 is available `$DOCKER_REGISTRY/strimzi-connector-hana-min:$DOCKER_TAG`, run the following command.
 ```
-docker save kubernetes.docker.internal:5000/strimzi-connector-hana-min:latest | eval $(minikube docker-env) && docker load
+docker save $DOCKER_REGISTRY/strimzi-connector-hana-min:latest | (eval $(minikube docker-env) && docker load)
 ```
 
 ##### Verify if the images are available

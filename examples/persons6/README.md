@@ -49,7 +49,7 @@ $ ls target
 avro-1.9.2.jar                          kafka-connect-avro-converter-5.4.2.jar
 common-config-5.4.2.jar                 kafka-connector-hana-1.0.0-SNAPSHOT.jar
 common-utils-5.4.2.jar                  kafka-schema-registry-client-5.4.2.jar
-kafka-avro-serializer-5.4.2.jar         ngdbc-2.5.49.jar
+kafka-avro-serializer-5.4.2.jar         ngdbc-2.10.14.jar
 $ 
 ```
 
