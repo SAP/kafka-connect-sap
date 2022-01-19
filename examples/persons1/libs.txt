@@ -1,1 +1,2 @@
+com/google/guava/guava/31.0.1-jre/guava-31.0.1-jre.jar
 com/sap/cloud/db/jdbc/ngdbc/2.10.14/ngdbc-2.10.14.jar
