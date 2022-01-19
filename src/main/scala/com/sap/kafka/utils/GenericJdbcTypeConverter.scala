@@ -2,8 +2,8 @@ package com.sap.kafka.utils
 
 import java.sql.{PreparedStatement, ResultSetMetaData}
 import java.text.SimpleDateFormat
-
 import com.sap.kafka.client.metaAttr
+import com.sap.kafka.connect.config.BaseConfigConstants
 import org.apache.kafka.connect.data._
 import org.slf4j.LoggerFactory
 
@@ -106,84 +106,74 @@ trait GenericJdbcTypeConverter {
     * @param datatypes sequence containing metadata for table
     * @return kafka schema
     */
-  def convertJdbcMetadataToSchema(tableName: String, datatypes: Seq[metaAttr]): Schema = {
+  def convertJdbcMetadataToSchema(tableName: String, datatypes: Seq[metaAttr], options: Map[String, String]): Schema = {
     val builder = org.apache.kafka.connect.data.SchemaBuilder.struct().name(tableName
       .replaceAll("[^\\w\\s]", "").toLowerCase)
     for ( i <- 1 to datatypes.size) {
-      addFieldSchema(datatypes, i-1, builder)
+      addFieldSchema(datatypes, i-1, builder, options)
     }
     builder.build()
   }
 
   private def addFieldSchema(datatypes: Seq[metaAttr], col: Int,
-                             builder: org.apache.kafka.connect.data.SchemaBuilder): Unit = {
+                             builder: org.apache.kafka.connect.data.SchemaBuilder, options: Map[String, String]): Unit = {
     val fieldname = datatypes(col).name
     val sqlType = datatypes(col).dataType
 
-    var optional = false
-    if (datatypes(col).isNullable == ResultSetMetaData.columnNullable ||
-      datatypes(col).isNullable == ResultSetMetaData.columnNullableUnknown) {
-      optional = true
-    }
+    var optional =
+      datatypes(col).isNullable == ResultSetMetaData.columnNullable ||
+        datatypes(col).isNullable == ResultSetMetaData.columnNullableUnknown
 
     sqlType match {
       case java.sql.Types.NULL =>
         log.warn("JDBC type {} not currently supported", sqlType)
       case java.sql.Types.BOOLEAN =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_BOOLEAN_SCHEMA)
-        else
-          builder.field(fieldname, Schema.BOOLEAN_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_BOOLEAN_SCHEMA else Schema.BOOLEAN_SCHEMA)
       case java.sql.Types.BIT | java.sql.Types.TINYINT =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_INT8_SCHEMA)
-        else
-          builder.field(fieldname, Schema.INT8_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_INT8_SCHEMA else Schema.INT8_SCHEMA)
       case java.sql.Types.SMALLINT =>
-        if (optional) {
-          builder.field(fieldname, Schema.OPTIONAL_INT16_SCHEMA)
-        }
-        else
-          builder.field(fieldname, Schema.INT16_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_INT16_SCHEMA else Schema.INT16_SCHEMA)
       case java.sql.Types.INTEGER =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_INT32_SCHEMA)
-        else
-          builder.field(fieldname, Schema.INT32_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_INT32_SCHEMA else Schema.INT32_SCHEMA)
       case java.sql.Types.BIGINT =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_INT64_SCHEMA)
-        else
-          builder.field(fieldname, Schema.INT64_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_INT64_SCHEMA else Schema.INT64_SCHEMA)
       case java.sql.Types.REAL =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_FLOAT32_SCHEMA)
-        else
-          builder.field(fieldname, Schema.FLOAT32_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_FLOAT32_SCHEMA else Schema.FLOAT32_SCHEMA)
       case java.sql.Types.FLOAT | java.sql.Types.DOUBLE =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_FLOAT64_SCHEMA)
-        else
-          builder.field(fieldname, Schema.FLOAT64_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_FLOAT64_SCHEMA else Schema.FLOAT64_SCHEMA)
       case java.sql.Types.NUMERIC | java.sql.Types.DECIMAL =>
-        val fieldBuilder = Decimal.builder(datatypes(col).scale)
-        if (optional)
-          fieldBuilder.optional()
-        builder.field(fieldname, fieldBuilder.build())
+        val numericMapping = options.getOrElse[String]("numeric.mapping", BaseConfigConstants.NUMERIC_MAPPING_NONE)
+        val precision = datatypes(col).precision
+        val scale = datatypes(col).scale
+        if (scale >= 0 && ((precision < 19 && numericMapping == BaseConfigConstants.NUMERIC_MAPPING_BEST_FIT) ||
+          numericMapping == BaseConfigConstants.NUMERIC_MAPPING_BEST_FIT_EAGER_DOUBLE)) {
+          if (scale == 0 && precision < 19) {
+            if (precision > 9) {
+              builder.field(fieldname, if (optional) Schema.OPTIONAL_INT64_SCHEMA else Schema.INT64_SCHEMA)
+            } else if (precision > 4) {
+              builder.field(fieldname, if (optional) Schema.OPTIONAL_INT32_SCHEMA else Schema.INT32_SCHEMA)
+            } else if (precision > 2) {
+              builder.field(fieldname, if (optional) Schema.OPTIONAL_INT16_SCHEMA else Schema.INT16_SCHEMA)
+            } else {
+              builder.field(fieldname, if (optional) Schema.OPTIONAL_INT8_SCHEMA else Schema.INT8_SCHEMA)
+            }
+          } else {
+            builder.field(fieldname, if (optional) Schema.OPTIONAL_FLOAT64_SCHEMA else Schema.FLOAT64_SCHEMA)
+          }
+        } else {
+          val fieldBuilder = Decimal.builder(scale).parameter("precision", Integer.toString(precision))
+          if (optional)
+            fieldBuilder.optional()
+          builder.field(fieldname, fieldBuilder.build())
+        }
       case java.sql.Types.CHAR | java.sql.Types.VARCHAR | java.sql.Types.LONGVARCHAR |
            java.sql.Types.NCHAR | java.sql.Types.NVARCHAR | java.sql.Types.LONGNVARCHAR |
            java.sql.Types.CLOB | java.sql.Types.NCLOB | java.sql.Types.DATALINK |
            java.sql.Types.SQLXML =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_STRING_SCHEMA)
-        else
-          builder.field(fieldname, Schema.STRING_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_STRING_SCHEMA else Schema.STRING_SCHEMA)
       case java.sql.Types.BINARY | java.sql.Types.BLOB | java.sql.Types.VARBINARY |
            java.sql.Types.LONGVARBINARY =>
-        if (optional)
-          builder.field(fieldname, Schema.OPTIONAL_BYTES_SCHEMA)
-        else
-          builder.field(fieldname, Schema.BYTES_SCHEMA)
+        builder.field(fieldname, if (optional) Schema.OPTIONAL_BYTES_SCHEMA else Schema.BYTES_SCHEMA)
       case java.sql.Types.DATE =>
         val dateSchemaBuilder = Date.builder()
         if (optional)

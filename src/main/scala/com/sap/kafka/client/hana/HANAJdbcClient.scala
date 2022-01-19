@@ -460,7 +460,8 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
 
       for (i <- 1 to metadata.getColumnCount) {
         val dataType = metadata.getColumnType(i)
-        val columnValue = getColumnData(dataType, resultSet, i)
+        val schemaType = schema.field(metadata.getColumnName(i)).schema
+        val columnValue = getColumnData(dataType, schemaType, resultSet, i)
         struct.put(metadata.getColumnName(i), columnValue)
       }
       dm :+= struct
@@ -468,7 +469,7 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
     Some(dm)
   }
 
-  private def getColumnData(columnType: Int, resultSet: ResultSet, index: Int) = {
+  private def getColumnData(columnType: Int, schemaType: Schema, resultSet: ResultSet, index: Int) = {
     val value = columnType match {
       case java.sql.Types.VARCHAR | java.sql.Types.NVARCHAR |
         java.sql.Types.NCHAR | java.sql.Types.CHAR | java.sql.Types.LONGVARCHAR
@@ -489,9 +490,15 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
 
       case java.sql.Types.FLOAT | java.sql.Types.REAL => resultSet.getFloat(index)
 
-      case java.sql.Types.DECIMAL => resultSet.getString(index) match {
-        case null => null
-        case value => new java.math.BigDecimal(value)
+      case java.sql.Types.DECIMAL => {
+        schemaType match {
+          case Schema.FLOAT64_SCHEMA | Schema.OPTIONAL_FLOAT64_SCHEMA => resultSet.getDouble(index)
+          case Schema.INT64_SCHEMA | Schema.OPTIONAL_INT64_SCHEMA => resultSet.getLong(index)
+          case Schema.INT32_SCHEMA | Schema.OPTIONAL_INT32_SCHEMA => resultSet.getInt(index)
+          case Schema.INT16_SCHEMA | Schema.OPTIONAL_INT16_SCHEMA => resultSet.getShort(index)
+          case Schema.INT8_SCHEMA | Schema.OPTIONAL_INT8_SCHEMA => resultSet.getByte(index)
+          case _ => resultSet.getBigDecimal(index)
+        }
       }
 
       case java.sql.Types.DOUBLE => resultSet.getDouble(index)

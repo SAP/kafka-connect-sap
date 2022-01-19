@@ -3,7 +3,6 @@ package com.sap.kafka.connect.source.hana
 import com.sap.kafka.client.hana.{HANAConfigInvalidInputException, HANAConfigMissingException, HANAJdbcClient}
 import com.sap.kafka.connect.config.BaseConfigConstants
 import com.sap.kafka.connect.config.hana.{HANAConfig, HANAParameters}
-import com.sap.kafka.utils.ExecuteWithExceptions
 
 import java.util
 import org.apache.kafka.common.config.{ConfigDef, ConfigException}

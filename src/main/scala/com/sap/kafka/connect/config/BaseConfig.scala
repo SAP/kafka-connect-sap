@@ -68,6 +68,12 @@ abstract class BaseConfig(props: Map[String, String]) {
     */
   def autoSchemaUpdateOn = props.getOrElse[String]("auto.schema.update", "false").toBoolean
 
+  /**
+   * Specifies how the numeric type is mapped.
+   * Default is 'none'
+   */
+  def numericMapping: String = props.getOrElse[String]("numeric.mapping", BaseConfigConstants.NUMERIC_MAPPING_NONE)
+
   def topicProperties(topic: String) = {
     val topicPropMap = scala.collection.mutable.Map[String, String]()
 

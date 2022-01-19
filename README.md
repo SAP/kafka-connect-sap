@@ -148,6 +148,8 @@ of the column can be numeric types such as `INTEGER`, `FLOAT`, `DECIMAL`, dateti
  
   * `{topic}.partition.count` - This setting can be used to specify the no. of topic partitions that the Source connector can use to publish the data. Should be an `Integer`. Default value is `1`.
 
+  * `numeric.mapping` - This setting can be used to control whether the DECIMAL column types are mapped to the default decimal type or one of the primitive types. The supported values are `none`, `best_fit`, and `best_fit_eager_double`. The default value is `none`.
+
 
 ## Examples
 

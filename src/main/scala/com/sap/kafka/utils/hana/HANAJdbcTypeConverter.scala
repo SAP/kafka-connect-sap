@@ -19,8 +19,9 @@ object HANAJdbcTypeConverter extends GenericJdbcTypeConverter {
     * Convert HANA Table schema to Kafka Schema
     * @param tableName HANA table for which metadata is converted
     * @param datatypes sequence containing metadata for table
+    * @param options properties to influence the conversion
     * @return kafka schema
     */
-  def convertHANAMetadataToSchema(tableName: String, datatypes: Seq[metaAttr]): Schema =
-    super.convertJdbcMetadataToSchema(tableName, datatypes)
+  def convertHANAMetadataToSchema(tableName: String, datatypes: Seq[metaAttr], options: Map[String, String]): Schema =
+    super.convertJdbcMetadataToSchema(tableName, datatypes, options)
 }
