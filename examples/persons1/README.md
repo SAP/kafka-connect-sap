@@ -44,7 +44,7 @@ $ make get_libs
 Getting jar files into target ...
 ...
 $ ls target
-ngdbc-2.10.14.jar
+guava-31.0.1-jre.jar  ngdbc-2.10.14.jar
 $
 ```
 
