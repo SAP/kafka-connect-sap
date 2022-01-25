@@ -101,6 +101,11 @@ class HANASourceTaskTestBase extends FunSuite
       val stmt = connection.createStatement()
       stmt.execute("CREATE SCHEMA IF NOT EXISTS SYS")
 
+      val objectTableFields = Seq(new Field("SCHEMA_NAME", 1, Schema.STRING_SCHEMA),
+        new Field("OBJECT_NAME", 2, Schema.STRING_SCHEMA))
+
+      jdbcClient.createTable(Some("SYS"), "OBJECTS", MetaSchema(null, objectTableFields), 3000)
+
       jdbcClient.createTable(Some("SYS"), "M_CS_PARTITIONS", MetaSchema(null, fields), 3000)
       stmt.execute("insert into \"SYS\".\"M_CS_PARTITIONS\" values('TEST', 'EMPLOYEES_SOURCE', 0)")
     } finally {

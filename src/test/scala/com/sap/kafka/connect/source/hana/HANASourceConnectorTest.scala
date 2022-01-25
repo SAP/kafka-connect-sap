@@ -31,6 +31,11 @@ class HANASourceConnectorTest extends AnyFunSuite with BeforeAndAfterAll {
       stmt.execute("DROP ALL OBJECTS DELETE FILES")
       stmt.execute("CREATE SCHEMA IF NOT EXISTS SYS")
 
+      val objectTableFields = Seq(new Field("SCHEMA_NAME", 1, Schema.STRING_SCHEMA),
+        new Field("OBJECT_NAME", 2, Schema.STRING_SCHEMA))
+
+      jdbcClient.createTable(Some("SYS"), "OBJECTS", MetaSchema(null, objectTableFields), 3000)
+
       val fields = Seq(new Field("SCHEMA_NAME", 1, Schema.STRING_SCHEMA),
         new Field("TABLE_NAME", 2, Schema.STRING_SCHEMA),
         new Field("PARTITION", 3, Schema.INT32_SCHEMA))
@@ -50,6 +55,7 @@ class HANASourceConnectorTest extends AnyFunSuite with BeforeAndAfterAll {
       connection.setAutoCommit(true)
       val stmt = connection.createStatement
       stmt.execute("drop table \"SYS\".\"M_CS_PARTITIONS\"")
+      stmt.execute("drop table \"SYS\".\"OBJECTS\"")
 
       stmt.execute("DROP ALL OBJECTS DELETE FILES")
     } finally {
