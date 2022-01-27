@@ -159,7 +159,11 @@ We welcome comments, questions, and bug reports. Please [create an issue](https:
 
 ## Contributing
 
-Contributions are accepted by sending Pull Requests to this repo. Please do not forget to sign the [Contribution License Agreement](https://cla-assistant.io/SAP/kafka-connect-sap).
+Contributions are accepted by sending Pull Requests to this repo.
+
+### Developer Certificate of Origin (DCO)
+Due to legal reasons, contributors will be asked to accept a DCO when they create the first pull request to this project. This happens in an automated fashion during the submission process. SAP uses [the standard DCO text of the Linux Foundation](https://developercertificate.org/).
+
 
 ## Compatibility
 
