@@ -77,15 +77,15 @@ class HANASourceConnector extends SourceConnector {
 
     var stmtToFetchPartitions = s"SELECT SCHEMA_NAME, TABLE_NAME, "
 
-    // Testing for the existence of `TABLE_PARTITIONS` for newer Hana Version (>= SPS 05), otherwise fall back to `M_CS_PARTITIONS`
-    val stmtToCheckPartitionTable = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS \"exists\" FROM SYS.OBJECTS WHERE SCHEMA_NAME='SYS' AND OBJECT_NAME = 'TABLE_PARTITIONS';"
+    // Testing for the existence of `M_CS_TABLES` for newer Hana Version (>= SPS 05), otherwise fall back to `M_CS_PARTITIONS`
+    val stmtToCheckPartitionTable = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS \"exists\" FROM SYS.OBJECTS WHERE SCHEMA_NAME='SYS' AND OBJECT_NAME = 'M_CS_TABLES';"
     val checkStmt = connection.createStatement()
     val checkStmtRs = checkStmt.executeQuery(stmtToCheckPartitionTable)
 
     checkStmtRs.next()
     if (checkStmtRs.getInt(1) == 1) {
-      log.info(s"Found `TABLE_PARTITIONS` table to determine the partitions")
-      stmtToFetchPartitions += "PART_ID FROM SYS.TABLE_PARTITIONS WHERE "
+      log.info(s"Found `M_CS_TABLES` table to determine the partitions")
+      stmtToFetchPartitions += "PART_ID FROM SYS.M_CS_TABLES WHERE "
     } else {
       log.info(s"Falling back to `M_CS_PARTITIONS` table to determine the partitions")
       stmtToFetchPartitions += "PARTITION FROM SYS.M_CS_PARTITIONS WHERE "
