@@ -10,12 +10,10 @@ import org.apache.kafka.common.config.{ConfigDef, ConfigException}
 import org.apache.kafka.connect.connector.Task
 import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.source.{SourceConnector, SourceConnectorContext}
-import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 
 class HANASourceConnector extends SourceConnector {
-  private val log: Logger = LoggerFactory.getLogger(classOf[HANASourceConnector])
   private var configRawProperties: Option[util.Map[String, String]] = None
   private var hanaClient: HANAJdbcClient = _
   private var tableOrQueryInfos: List[Tuple3[String, Int, String]] = _
