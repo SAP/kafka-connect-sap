@@ -96,13 +96,13 @@ class HANASourceTaskTestBase extends FunSuite
 
       val fields = Seq(new Field("SCHEMA_NAME", 1, Schema.STRING_SCHEMA),
         new Field("TABLE_NAME", 2, Schema.STRING_SCHEMA),
-        new Field("PARTITION", 3, Schema.INT32_SCHEMA))
+        new Field("PART_ID", 3, Schema.INT32_SCHEMA))
 
       val stmt = connection.createStatement()
       stmt.execute("CREATE SCHEMA IF NOT EXISTS SYS")
 
-      jdbcClient.createTable(Some("SYS"), "M_CS_PARTITIONS", MetaSchema(null, fields), 3000)
-      stmt.execute("insert into \"SYS\".\"M_CS_PARTITIONS\" values('TEST', 'EMPLOYEES_SOURCE', 0)")
+      jdbcClient.createTable(Some("SYS"), "M_CS_TABLES", MetaSchema(null, fields), 3000)
+      stmt.execute("insert into \"SYS\".\"M_CS_TABLES\" values('TEST', 'EMPLOYEES_SOURCE', 0)")
     } finally {
       connection.close()
     }
@@ -113,7 +113,7 @@ class HANASourceTaskTestBase extends FunSuite
     try {
       connection.setAutoCommit(true)
       val stmt = connection.createStatement()
-      stmt.execute("drop table \"SYS\".\"M_CS_PARTITIONS\"")
+      stmt.execute("drop table \"SYS\".\"M_CS_TABLES\"")
 
       stmt.execute("DROP ALL OBJECTS DELETE FILES")
     } finally {

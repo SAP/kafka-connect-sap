@@ -33,12 +33,12 @@ class HANASourceConnectorTest extends AnyFunSuite with BeforeAndAfterAll {
 
       val fields = Seq(new Field("SCHEMA_NAME", 1, Schema.STRING_SCHEMA),
         new Field("TABLE_NAME", 2, Schema.STRING_SCHEMA),
-        new Field("PARTITION", 3, Schema.INT32_SCHEMA))
+        new Field("PART_ID", 3, Schema.INT32_SCHEMA))
 
-      jdbcClient.createTable(Some("SYS"), "M_CS_PARTITIONS", MetaSchema(null, fields), 3000)
-      stmt.execute("insert into \"SYS\".\"M_CS_PARTITIONS\" values('TEST', 'ONE_SOURCE', 0)")
-      stmt.execute("insert into \"SYS\".\"M_CS_PARTITIONS\" values('TEST', 'TWO_SOURCE', 1)")
-      stmt.execute("insert into \"SYS\".\"M_CS_PARTITIONS\" values('TEST', 'TWO_SOURCE', 2)")
+      jdbcClient.createTable(Some("SYS"), "M_CS_TABLES", MetaSchema(null, fields), 3000)
+      stmt.execute("insert into \"SYS\".\"M_CS_TABLES\" values('TEST', 'ONE_SOURCE', 0)")
+      stmt.execute("insert into \"SYS\".\"M_CS_TABLES\" values('TEST', 'TWO_SOURCE', 1)")
+      stmt.execute("insert into \"SYS\".\"M_CS_TABLES\" values('TEST', 'TWO_SOURCE', 2)")
     } finally {
       connection.close()
     }
@@ -49,7 +49,7 @@ class HANASourceConnectorTest extends AnyFunSuite with BeforeAndAfterAll {
     try {
       connection.setAutoCommit(true)
       val stmt = connection.createStatement
-      stmt.execute("drop table \"SYS\".\"M_CS_PARTITIONS\"")
+      stmt.execute("drop table \"SYS\".\"M_CS_TABLES\"")
 
       stmt.execute("DROP ALL OBJECTS DELETE FILES")
     } finally {

@@ -102,7 +102,7 @@ class HANASourceConnector extends SourceConnector {
       }
     }
 
-    // fill tableInfo for tables whose entry is not in M_CS_PARTITIONS
+    // fill tableInfo for tables whose entry is not in M_CS_TABLES
     val tablesInInfo = tableInfos.map(tableInfo => tableInfo._1)
     val tablesToBeAdded = tables.filterNot(table => tablesInInfo.contains(table._1))
 
