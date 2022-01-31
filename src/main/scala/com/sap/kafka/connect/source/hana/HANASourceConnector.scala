@@ -73,7 +73,8 @@ class HANASourceConnector extends SourceConnector {
     val noOfTables = tables.size
     var tablecount = 1
 
-    var stmtToFetchPartitions = s"SELECT SCHEMA_NAME, TABLE_NAME, PARTITION FROM SYS.M_CS_PARTITIONS WHERE "
+    var stmtToFetchPartitions = s"SELECT SCHEMA_NAME, TABLE_NAME, PART_ID FROM SYS.M_CS_TABLES WHERE "
+
     tables.foreach(table => {
       if (!(configProperties.topicProperties(table._2)("table.type") == BaseConfigConstants.COLLECTION_TABLE_TYPE)) {
         table._1 match {
@@ -101,7 +102,7 @@ class HANASourceConnector extends SourceConnector {
       }
     }
 
-    // fill tableInfo for tables whose entry is not in M_CS_PARTITIONS
+    // fill tableInfo for tables whose entry is not in M_CS_TABLES
     val tablesInInfo = tableInfos.map(tableInfo => tableInfo._1)
     val tablesToBeAdded = tables.filterNot(table => tablesInInfo.contains(table._1))
 
