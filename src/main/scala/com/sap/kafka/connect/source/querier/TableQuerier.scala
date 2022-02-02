@@ -80,18 +80,19 @@ abstract class TableQuerier(mode: String, tableOrQuery: String,
   }
 
   private def getSchema(): Schema = {
+    val options = Map("numeric.mapping" -> config.numericMapping)
     mode match {
       case BaseConfigConstants.QUERY_MODE_TABLE =>
         if (getOrCreateJdbcClient().get.isInstanceOf[HANAJdbcClient]) {
           val metadata = getOrCreateJdbcClient().get.getMetaData(tableOrQuery, None)
-          HANAJdbcTypeConverter.convertHANAMetadataToSchema(tableName, metadata)
+          HANAJdbcTypeConverter.convertHANAMetadataToSchema(tableName, metadata, options)
         } else {
           throw new RuntimeException("Jdbc Client is not available")
         }
       case BaseConfigConstants.QUERY_MODE_SQL =>
         if (getOrCreateJdbcClient().get.isInstanceOf[HANAJdbcClient]) {
           val metadata = getOrCreateJdbcClient().get.getMetadata(tableOrQuery)
-          HANAJdbcTypeConverter.convertHANAMetadataToSchema("Query" + Random.nextInt, metadata)
+          HANAJdbcTypeConverter.convertHANAMetadataToSchema("Query" + Random.nextInt, metadata, options)
         } else {
           throw new RuntimeException("Jdbc Client is not available")
         }

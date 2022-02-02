@@ -3,9 +3,10 @@ package com.sap.kafka.connect.source
 import com.sap.kafka.client.MetaSchema
 import com.sap.kafka.connect.source.hana.HANASourceConnector
 import org.apache.kafka.connect.data.Schema.Type
-import org.apache.kafka.connect.data.{Field, Schema, Struct}
+import org.apache.kafka.connect.data.{Decimal, Field, Schema, Struct}
 import org.apache.kafka.connect.source.SourceRecord
 
+import java.math.RoundingMode
 import scala.collection.JavaConverters._
 
 class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
@@ -46,6 +47,12 @@ class HANASourceTaskConversionTest extends HANASourceTaskTestBase {
   test("string type") {
     typeConversion(Schema.STRING_SCHEMA, true, "'a'",
       Schema.STRING_SCHEMA, "a")
+  }
+
+  test("decimal type") {
+    val schema = Decimal.builder(2).parameter("precision", Integer.toString(10)).build()
+    typeConversion(schema, true, "3.12",
+      schema, new java.math.BigDecimal(3.12).setScale(2, RoundingMode.HALF_UP))
   }
 
   private def typeConversion(sqlType: Schema, nullable: Boolean,

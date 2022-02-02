@@ -59,7 +59,7 @@ trait GenericSchemaBuilder {
     logicalType match {
       case Date.LOGICAL_NAME => "DATE"
       case Decimal.LOGICAL_NAME =>
-        s"""DECIMAL(10, ${parameters(Decimal.SCALE_FIELD)})"""
+        s"""DECIMAL(${parameters.getOrElse("precision", "10")}, ${parameters(Decimal.SCALE_FIELD)})"""
       case Time.LOGICAL_NAME => "TIME"
       case Timestamp.LOGICAL_NAME => "TIMESTAMP"
       case _ => throw new ConnectorException(s"Field Schema type name $logicalType is invalid")

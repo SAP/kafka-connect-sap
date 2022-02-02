@@ -28,6 +28,10 @@ object BaseConfigConstants {
 
   val IN_MEMORY_ENGINE = "in-memory"
   val DISK_ENGINE = "disk"
+
+  val NUMERIC_MAPPING_NONE = "none"
+  val NUMERIC_MAPPING_BEST_FIT = "best_fit"
+  val NUMERIC_MAPPING_BEST_FIT_EAGER_DOUBLE = "best_fit_eager_double"
 }
 
 trait BaseParameters {
