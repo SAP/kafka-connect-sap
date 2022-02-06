@@ -3,11 +3,12 @@ package com.sap.kafka.utils
 import com.sap.kafka.client.MetaSchema
 import org.apache.kafka.connect.data._
 import org.apache.kafka.connect.data.Schema.Type
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 trait GenericSchemaBuilder {
+  private val log = LoggerFactory.getLogger(getClass)
 
   /**
     * Converts a Kafka schema to the Jdbc Schema.
@@ -62,7 +63,11 @@ trait GenericSchemaBuilder {
         s"""DECIMAL(${parameters.getOrElse("precision", "10")}, ${parameters(Decimal.SCALE_FIELD)})"""
       case Time.LOGICAL_NAME => "TIME"
       case Timestamp.LOGICAL_NAME => "TIMESTAMP"
-      case _ => throw new ConnectorException(s"Field Schema type name $logicalType is invalid")
+      case _ => {
+        // no configuration is available to provide custom type mapping, so use its base type mapping
+        log.warn(s"Unknown logical type ${logicalType} interpreted as its base type ${fieldSchema.`type`()}")
+        avroToJdbcType(fieldSchema.`type`())
+      }
     }
   }
 }

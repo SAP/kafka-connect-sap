@@ -73,6 +73,45 @@ class AvroLogicalTypesTest extends FunSuite {
     assert(expectedDateField === actualDateField)
   }
 
+  test("put propagates to DB with schema containing custom fields") {
+    val schema = SchemaBuilder.struct()
+      .field("custom_field", SchemaBuilder.string().name("com.sap.kafka.connect.Foo").version(1).build())
+
+    val props = new util.HashMap[String, String]()
+    props.put("connection.url", TEST_CONNECTION_URL)
+    props.put("connection.user", "sa")
+    props.put("connection.password", "sa")
+    props.put("topics", "testTopic")
+    props.put("testTopic.table.name", "\"TEST\".\"CUSTOM_TABLE\"")
+    props.put("testTopic.table.type", "row")
+    props.put("auto.create", "true")
+
+    val task = new HANASinkTask()
+
+    task.initialize(mock(classOf[SinkTaskContext]))
+    task.start(props)
+
+    val config = HANAParameters.getConfig(props)
+    task.hanaClient = new MockJdbcClient(config)
+    task.initWriter(config)
+
+    val expectedCustomField = "Hello"
+    val struct = new Struct(schema).put("custom_field", expectedCustomField)
+
+    task.put(util.Collections.singleton(
+      new SinkRecord("testTopic", 1, null, null, schema, struct, 42)
+    ))
+
+    val rs = task.hanaClient.executeQuery(schema, "select * from \"TEST\".\"CUSTOM_TABLE\"",
+      -1, -1)
+    val structs = rs.get
+    assert(structs.size === 1)
+    val head = structs.head
+
+    val actualCustomField = head.get("custom_field").toString
+    assert(expectedCustomField === actualCustomField)
+  }
+
   test("put propagates to DB with schema containing time fields") {
     val schema = SchemaBuilder.struct()
       .field("time_field", Time.builder().build())
