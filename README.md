@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/SAP/kafka-connect-sap.svg?branch=master)](https://travis-ci.com/SAP/kafka-connect-sap)
+[![Build Status](https://travis-ci.com/SAP/kafka-connect-sap.svg?branch=master)](https://app.travis-ci.com/SAP/kafka-connect-sap)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/kafka-connect-sap)](https://api.reuse.software/info/github.com/SAP/kafka-connect-sap)
 
