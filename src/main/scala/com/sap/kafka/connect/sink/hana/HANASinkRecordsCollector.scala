@@ -225,7 +225,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     for (field <- dbSchema) {
       if (!fieldNames.contains(field.name)) {
         alts :+= field
-      } else if (field.dataType != fieldTypes.get(field.name).get) {
+      } else if (!isCompatibleType(field.dataType, fieldTypes.get(field.name).get)) {
         // incompatible as the datatype is not identical (should we support this case using casting?)
         return None
       }
@@ -239,5 +239,27 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     }
     // compatible
     return Some(alts.toSet)
+  }
+
+  private def isCompatibleType(tgttype: Int, srctype: Int): Boolean = {
+    // identical types
+    if (tgttype == srctype) {
+      return true
+    }
+    // string types
+    if (isStringType(tgttype) && isStringType(srctype)) {
+      return true
+    }
+    // TODO add numeric types?
+    return false
+  }
+
+  private def isStringType(sqltype: Int): Boolean = {
+    sqltype match {
+      case java.sql.Types.CHAR | java.sql.Types.VARCHAR | java.sql.Types.LONGNVARCHAR
+           | java.sql.Types.NCHAR | java.sql.Types.NVARCHAR | java.sql.Types.CLOB  | java.sql.Types.NCLOB
+           | java.sql.Types.DATALINK | java.sql.Types.SQLXML => true
+      case _ => false
+    }
   }
 }
