@@ -227,6 +227,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
         alts :+= field
       } else if (!isCompatibleType(field.dataType, fieldTypes.get(field.name).get)) {
         // incompatible as the datatype is not identical (should we support this case using casting?)
+        log.info(s"Target type ${field.dataType} is incompatile with source type ${fieldTypes.get(field.name).get}")
         return None
       }
       if (nonNullables.contains(field.name)) {
@@ -235,6 +236,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     }
     if (!nonNullables.isEmpty) {
       // incompatible as some nonNullables are not set
+      log.info(s"Non-nullable fields $nonNullables are missing")
       return None
     }
     // compatible
