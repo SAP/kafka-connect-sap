@@ -226,8 +226,8 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
       if (!fieldNames.contains(field.name)) {
         alts :+= field
       } else if (!isCompatibleType(field.dataType, fieldTypes.get(field.name).get)) {
-        // incompatible as the datatype is not identical (should we support this case using casting?)
-        log.info(s"Target type ${field.dataType} is incompatile with source type ${fieldTypes.get(field.name).get}")
+        // incompatible as the datatype is not compatible
+        log.info(s"Field ${field.name} with target type ${field.dataType} is incompatile with source type ${fieldTypes.get(field.name).get}")
         return None
       }
       if (nonNullables.contains(field.name)) {
@@ -248,10 +248,12 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     if (tgttype == srctype) {
       return true
     }
-    // string types
-    if (isStringType(tgttype) && isStringType(srctype)) {
+    // string, boolean types
+    if ((isStringType(tgttype) && isStringType(srctype))
+      || (isBooleanType(tgttype) && isBooleanType(srctype))) {
       return true
     }
+
     // TODO add numeric types?
     return false
   }
@@ -261,6 +263,13 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
       case java.sql.Types.CHAR | java.sql.Types.VARCHAR | java.sql.Types.LONGNVARCHAR
            | java.sql.Types.NCHAR | java.sql.Types.NVARCHAR | java.sql.Types.CLOB  | java.sql.Types.NCLOB
            | java.sql.Types.DATALINK | java.sql.Types.SQLXML => true
+      case _ => false
+    }
+  }
+
+  private def isBooleanType(sqltype: Int): Boolean = {
+    sqltype match {
+      case java.sql.Types.BIT | java.sql.Types.BOOLEAN => true
       case _ => false
     }
   }
