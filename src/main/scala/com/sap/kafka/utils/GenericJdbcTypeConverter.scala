@@ -7,8 +7,12 @@ import com.sap.kafka.connect.config.BaseConfigConstants
 import org.apache.kafka.connect.data._
 import org.slf4j.LoggerFactory
 
+import java.util.{Calendar, TimeZone}
+
 trait GenericJdbcTypeConverter {
   private val log = LoggerFactory.getLogger(getClass)
+
+  private val calendarUTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
   /**
     * Converts a Kafka SinkRow Schema  to the most compatible Jdbc SQL datatype.
@@ -80,9 +84,9 @@ trait GenericJdbcTypeConverter {
     case java.sql.Types.BINARY | java.sql.Types.BLOB | java.sql.Types.VARBINARY |
          java.sql.Types.LONGVARBINARY => (value: Any)  =>
       stmt.setBytes(i + 1, value.asInstanceOf[Array[Byte]])
-    case java.sql.Types.DATE => (value: Any) => stmt.setDate(i + 1, convertToJdbcDateTypeFromAvroDateType(value))
-    case java.sql.Types.TIME => (value: Any) => stmt.setTime(i + 1, convertToJdbcTimeTypeFromAvroTimeType(value))
-    case java.sql.Types.TIMESTAMP => (value: Any) => stmt.setTimestamp(i + 1, convertToJdbcTimestampTypeFromAvroTimestampType(value))
+    case java.sql.Types.DATE => (value: Any) => stmt.setDate(i + 1, convertToJdbcDateTypeFromAvroDateType(value), calendarUTC)
+    case java.sql.Types.TIME => (value: Any) => stmt.setTime(i + 1, convertToJdbcTimeTypeFromAvroTimeType(value), calendarUTC)
+    case java.sql.Types.TIMESTAMP => (value: Any) => stmt.setTimestamp(i + 1, convertToJdbcTimestampTypeFromAvroTimestampType(value), calendarUTC)
     case other =>
       (value: Any) =>
         sys.error(s"Unable to translate the non-null value for the field $i")
