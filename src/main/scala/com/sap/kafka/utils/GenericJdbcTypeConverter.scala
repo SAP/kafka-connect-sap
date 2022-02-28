@@ -182,17 +182,17 @@ trait GenericJdbcTypeConverter {
         val dateSchemaBuilder = Date.builder()
         if (optional)
           dateSchemaBuilder.optional()
-        builder.field(fieldname, dateSchemaBuilder)
+        builder.field(fieldname, dateSchemaBuilder.build())
       case java.sql.Types.TIME =>
         val timeSchemaBuilder = Time.builder()
         if (optional)
           timeSchemaBuilder.optional()
-        builder.field(fieldname, timeSchemaBuilder)
+        builder.field(fieldname, timeSchemaBuilder.build())
       case java.sql.Types.TIMESTAMP =>
         val tsSchemaBuilder = Timestamp.builder()
         if (optional)
           tsSchemaBuilder.optional()
-        builder.field(fieldname, tsSchemaBuilder)
+        builder.field(fieldname, tsSchemaBuilder.build())
       case java.sql.Types.ARRAY | java.sql.Types.JAVA_OBJECT | java.sql.Types.OTHER |
            java.sql.Types.DISTINCT | java.sql.Types.STRUCT | java.sql.Types.REF |
            java.sql.Types.ROWID =>

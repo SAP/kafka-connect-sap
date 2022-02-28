@@ -1,9 +1,10 @@
 package com.sap.kafka.connect.source.querier
 
 import java.util
-
 import com.sap.kafka.client.hana.HANAConfigMissingException
 import com.sap.kafka.utils.ExecuteWithExceptions
+
+import java.text.SimpleDateFormat
 
 class TimestampIncrementingOffset(incrementingOffset: String) {
   def getIncrementingOffset(): String = {
@@ -24,6 +25,12 @@ class TimestampIncrementingOffset(incrementingOffset: String) {
 
 object TimestampIncrementingOffset {
   var INCREMENTING_FIELD: String = _
+
+  import java.text.SimpleDateFormat
+  import java.util.TimeZone
+
+  val UTC_DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+  UTC_DATETIME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"))
 
   private val DEFAULT_DATE = "1970-01-01 00:00:00.000"
   private val DEFAULT_VAL = "-1"

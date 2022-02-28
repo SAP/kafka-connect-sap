@@ -14,6 +14,8 @@ import org.mockito.Mockito._
 import org.apache.kafka.connect.data.{Field, Schema}
 import org.mockito.ArgumentMatchers.any
 
+import java.text.SimpleDateFormat
+
 class HANASourceTaskTestBase extends FunSuite
                               with BeforeAndAfterAll {
   val tmpdir = System.getProperty("java.io.tmpdir")
@@ -25,6 +27,7 @@ class HANASourceTaskTestBase extends FunSuite
 
   protected val SINGLE_TABLE_NAME_FOR_INCR_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR_LOAD\""
   protected val SINGLE_TABLE_NAME_FOR_INCR2_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR2_LOAD\""
+  protected val SINGLE_TABLE_NAME_FOR_INCR3_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR3_LOAD\""
   protected val SINGLE_TABLE_NAME_FOR_INCR_QUERY_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_FOR_INCR_QUERY_LOAD\""
   protected val SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD = "\"TEST\".\"EMPLOYEES_SOURCE_MAXROWS_FOR_INCR_LOAD\""
 
@@ -43,6 +46,8 @@ class HANASourceTaskTestBase extends FunSuite
   SINGLE_TABLE_PARTITION_FOR_INCR_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR_LOAD + PARTION_SUFFIX)
   protected val SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD = new util.HashMap[String, String]()
   SINGLE_TABLE_PARTITION_FOR_INCR2_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR2_LOAD + PARTION_SUFFIX)
+  protected val SINGLE_TABLE_PARTITION_FOR_INCR3_LOAD = new util.HashMap[String, String]()
+  SINGLE_TABLE_PARTITION_FOR_INCR3_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR3_LOAD + PARTION_SUFFIX)
   protected val SINGLE_TABLE_PARTITION_FOR_INCR_QUERY_LOAD = new util.HashMap[String, String]()
   SINGLE_TABLE_PARTITION_FOR_INCR_QUERY_LOAD.put(SourceConnectorConstants.TABLE_NAME_KEY, SINGLE_TABLE_NAME_FOR_INCR_QUERY_LOAD + PARTION_SUFFIX)
   protected val SINGLE_TABLE_PARTITION_FOR_INCR_MAXROWS_LOAD = new util.HashMap[String, String]()
