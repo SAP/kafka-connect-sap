@@ -3,8 +3,7 @@ package com.sap.kafka.connect.sink
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util
-import java.util.TimeZone
-
+import java.util.{Calendar, TimeZone}
 import com.sap.kafka.connect.MockJdbcClient
 import com.sap.kafka.connect.config.hana.HANAParameters
 import com.sap.kafka.connect.sink.hana.HANASinkTask
@@ -17,6 +16,8 @@ import scala.math.BigDecimal.RoundingMode
 
 class AvroLogicalTypesTest extends FunSuite {
   val TEST_CONNECTION_URL = "jdbc:h2:mem:test;INIT=CREATE SCHEMA IF NOT EXISTS TEST"
+
+  private val calendarUTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
   test("put propagates to DB with schema containing date fields") {
     val schema = SchemaBuilder.struct()
@@ -53,6 +54,7 @@ class AvroLogicalTypesTest extends FunSuite {
     //  }
     // }
     val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
+    simpleDateFormat.setCalendar(calendarUTC)
     val expectedDateField = "2013-10-16"
     val date = simpleDateFormat.parse(expectedDateField)
 
@@ -147,6 +149,7 @@ class AvroLogicalTypesTest extends FunSuite {
     //  }
     // }
     val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'")
+    simpleDateFormat.setCalendar(calendarUTC)
     val expectedDateField = "2013-10-16T02:02:02Z"
     val expectedTimeField = "02:02:02"
     val date = simpleDateFormat.parse(expectedDateField)
@@ -203,6 +206,7 @@ class AvroLogicalTypesTest extends FunSuite {
     //  }
     // }
     val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'")
+    simpleDateFormat.setCalendar(calendarUTC)
     val expectedDateField = "2013-10-16T02:02:02.002Z"
     val expectedTimestampField = "2013-10-16 02:02:02.002"
     val date = simpleDateFormat.parse(expectedDateField)

@@ -7,7 +7,6 @@ import org.apache.kafka.common.config.ConfigException
 import org.apache.kafka.connect.source.SourceRecord
 
 import scala.collection.JavaConverters._
-import scala.util.Random
 
 class IncrColTableQuerier(mode: String, tableOrQuery: String, tablePartition: Int, topic: String,
                           incrementingColumn: String, offsetMap: Map[String, Object],
@@ -56,8 +55,12 @@ class IncrColTableQuerier(mode: String, tableOrQuery: String, tablePartition: In
         var partition: Map[String, String] = null
 
         if (incrementingColumn != null) {
-          val id = record.get(incrementingColumn).toString
-          offset = new TimestampIncrementingOffset(id)
+          val id = record.get(incrementingColumn)
+          val idstr = id match {
+            case _: java.util.Date => TimestampIncrementingOffset.UTC_DATETIME_FORMAT.format(id)
+            case _ => id.toString
+          }
+          offset = new TimestampIncrementingOffset(idstr)
         }
 
         mode match {

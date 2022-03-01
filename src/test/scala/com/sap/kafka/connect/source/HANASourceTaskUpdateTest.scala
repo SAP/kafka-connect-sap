@@ -3,7 +3,8 @@ package com.sap.kafka.connect.source
 import java.util
 import com.sap.kafka.client.MetaSchema
 import com.sap.kafka.connect.source.hana.{HANASourceConnector, HANASourceTask}
-import org.apache.kafka.connect.data.{Field, Schema, SchemaBuilder, Struct}
+import com.sap.kafka.connect.source.querier.TimestampIncrementingOffset
+import org.apache.kafka.connect.data.{Field, Schema, SchemaBuilder, Struct, Timestamp}
 import org.apache.kafka.connect.source.SourceRecord
 import org.scalatest.BeforeAndAfterEach
 
@@ -18,6 +19,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
   protected var queryLoadTask: HANASourceTask = _
   protected var incrLoadTask: HANASourceTask = _
   protected var incr2LoadTask: HANASourceTask = _
+  protected var incr3LoadTask: HANASourceTask = _
   protected var incrQueryLoadTask: HANASourceTask = _
   protected var maxrowsLoadTask: HANASourceTask = _
   protected var maxrowsIncrLoadTask: HANASourceTask = _
@@ -27,6 +29,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     queryLoadTask = new HANASourceTask(time, jdbcClient)
     incrLoadTask = new HANASourceTask(time, jdbcClient)
     incr2LoadTask = new HANASourceTask(time, jdbcClient)
+    incr3LoadTask = new HANASourceTask(time, jdbcClient)
     incrQueryLoadTask = new HANASourceTask(time, jdbcClient)
     multiTableLoadTask = new HANASourceTask(time, jdbcClient)
     maxrowsLoadTask = new HANASourceTask(time, jdbcClient)
@@ -45,12 +48,16 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA))),
       3000)
     jdbcClient.createTable(Some("TEST"),
+      SINGLE_TABLE_NAME_FOR_INCR_LOAD.split("\\.")(1).replace("\"", ""),
+      MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA),
+        new Field("name", 2, Schema.STRING_SCHEMA))), 3000)
+    jdbcClient.createTable(Some("TEST"),
       SINGLE_TABLE_NAME_FOR_INCR2_LOAD.split("\\.")(1).replace("\"", ""),
       MetaSchema(null, Seq(new Field("id", 1, Schema.STRING_SCHEMA),
         new Field("name", 2, Schema.STRING_SCHEMA))), 3000)
     jdbcClient.createTable(Some("TEST"),
-      SINGLE_TABLE_NAME_FOR_INCR_LOAD.split("\\.")(1).replace("\"", ""),
-      MetaSchema(null, Seq(new Field("id", 1, Schema.INT32_SCHEMA),
+      SINGLE_TABLE_NAME_FOR_INCR3_LOAD.split("\\.")(1).replace("\"", ""),
+      MetaSchema(null, Seq(new Field("ts", 1, Timestamp.SCHEMA),
         new Field("name", 2, Schema.STRING_SCHEMA))), 3000)
     jdbcClient.createTable(Some("TEST"),
       SINGLE_TABLE_NAME_FOR_INCR_QUERY_LOAD.split("\\.")(1).replace("\"", ""),
@@ -81,6 +88,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
       statement.execute("drop table " + SECOND_TABLE_NAME_FOR_MULTI_LOAD)
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_LOAD)
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR2_LOAD)
+      statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR3_LOAD)
       statement.execute("drop table " + SINGLE_TABLE_NAME_FOR_INCR_MAXROWS_LOAD)
     } finally {
       connection.close()
@@ -250,7 +258,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     }
   }
 
-  test("incremental column load test") {
+  test("incremental int-column load test") {
     val connection = jdbcClient.getConnection
     try {
       connection.setAutoCommit(true)
@@ -302,7 +310,7 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
     }
   }
 
-  test("incremental2 column load test") {
+  test("incremental string-column load test") {
     val connection = jdbcClient.getConnection
     try {
       connection.setAutoCommit(true)
@@ -343,6 +351,64 @@ class HANASourceTaskUpdateTest extends HANASourceTaskTestBase
 
         expectedData = new Struct(expectedSchema)
           .put("id", "2")
+          .put("name", "Lukas")
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+      })
+      task.stop()
+      connector.stop()
+    } finally {
+      connection.close()
+    }
+  }
+
+  test("incremental timestamp-column load test") {
+    val connection = jdbcClient.getConnection
+    try {
+      connection.setAutoCommit(true)
+      val stmt = connection.createStatement()
+      val ts1 = new java.sql.Timestamp(1000l)
+      val ts2 = new java.sql.Timestamp(2000l)
+      val ts1str = TimestampIncrementingOffset.UTC_DATETIME_FORMAT.format(ts1)
+      val ts2str = TimestampIncrementingOffset.UTC_DATETIME_FORMAT.format(ts2)
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR3_LOAD +
+        "values('%s', 'Lukas')".format(ts1str))
+
+      val expectedSchema = SchemaBuilder.struct().name("expected schema")
+        .field("ts", Timestamp.builder().build())
+        .field("name", Schema.STRING_SCHEMA)
+      val connector = new HANASourceConnector
+      connector.start(singleTableConfigInIncrementalMode(SINGLE_TABLE_NAME_FOR_INCR3_LOAD, "ts"))
+      incr3LoadTask.initialize(taskContext)
+      incr3LoadTask.start(connector.taskConfigs(1).get(0))
+      var expectedData = new Struct(expectedSchema)
+        .put("ts", ts1)
+        .put("name", "Lukas")
+
+      var records = incr3LoadTask.poll()
+      assert(records.size() === 1)
+
+      records.forEach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
+        compareData(expectedData, record.value().asInstanceOf[Struct],
+          expectedSchema)
+      })
+
+      stmt.execute("insert into " + SINGLE_TABLE_NAME_FOR_INCR3_LOAD +
+        "values('%s', 'Lukas')".format(ts2str))
+      records = incr3LoadTask.poll()
+      assert(records == null)
+      records = incr3LoadTask.poll()
+      // because this only takes the delta
+      assert(records.size() === 1)
+
+      records.forEach(record => {
+        compareSchema(expectedSchema, record.valueSchema())
+        assert(record.value().isInstanceOf[Struct])
+
+        expectedData = new Struct(expectedSchema)
+          .put("ts", ts2)
           .put("name", "Lukas")
         compareData(expectedData, record.value().asInstanceOf[Struct],
           expectedSchema)
