@@ -53,6 +53,12 @@
             <version>${kafka.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-transforms</artifactId>
+            <version>${kafka.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- misc dependencies -->
         <dependency>
