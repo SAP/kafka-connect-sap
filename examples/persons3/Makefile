@@ -1,6 +1,6 @@
 #
 #
-# make get_libs     - build the go binary
+# make get_libs     - download dependent libraries
 #
 
 DOCKER_TAG ?= latest
