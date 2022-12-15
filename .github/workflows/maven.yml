@@ -23,7 +23,7 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
         cache: maven
-    - name: Install dependencies
+    - name: Install Dependencies
       run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-    - name: Install dependencies
+    - name: Run Tests
       run: mvn test -B
