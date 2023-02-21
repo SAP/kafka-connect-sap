@@ -62,6 +62,8 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
 
     * `auto.evolve` - This setting allows the evolution of the table schema with some restriction, namely when the record contains additional nullable fields that are not present previously, the corresponding columns will be added. In contrast, when the record contains less fields, the table schema will not be changed. Should be a `Boolean`. Default is `false`.
 
+    * `auto.schema.update` - Whether to auto update Schema from Database for every record flush. Default is `false`.
+
     * `batch.size` - This setting can be used to specify the number of records that can be pushed into SAP DB table in a single flush. Should be an `Integer`. Default is `3000`.
 
     * `max.retries` - This setting can be used to specify the maximum no. of retries that can be made to re-establish the connection to SAP DB in case the connection is lost. Should be an `Integer`. Default is `10`.
@@ -90,6 +92,8 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
 
     * `queryMode` - This setting can be used to specify the query mode in which data should be fetched from SAP DB table. Default is `table`. And supported values are `table, query ( to support sql queries )`. When 
 using `queryMode: query` it is also required to have `query` parameter defined. This query parameter needs to be prepended by TopicName. If the `incrementing.column.name` property is used together to constrain the result, then it can be omitted from its where clause.
+
+    * `batch.max.rows` - Max rows to include in a single batch call. Should be an integer. Default is `100`.
 
     * `{topic}.table.name` - This setting allows specifying the SAP DB table name where the data needs to be read from. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
 
