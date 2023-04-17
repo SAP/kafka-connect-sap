@@ -1,11 +1,10 @@
 package com.sap.kafka.connect.sink
 
 import java.util
-
 import com.sap.kafka.connect.config.BaseConfig
-import com.sap.kafka.utils.ConnectorException
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.sink.{SinkRecord, SinkTask}
 import org.slf4j.Logger
 
@@ -35,7 +34,7 @@ abstract class GenericSinkTask extends SinkTask with SinkWriter   {
       try {
         writer.write(records)
       } catch  {
-        case exception : ConnectorException =>
+        case exception : ConnectException =>
           log.error("Write of {} records failed, remainingRetries={}", records.size(), retriesLeft)
           while (retriesLeft > 0) {
             try {
@@ -45,7 +44,7 @@ abstract class GenericSinkTask extends SinkTask with SinkWriter   {
               writer.write(records)
               retriesLeft = -1
             } catch {
-              case exception: ConnectorException =>
+              case exception: ConnectException =>
                 // ignore
             }
           }

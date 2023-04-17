@@ -1,5 +1,6 @@
 package com.sap.kafka.utils
 
+import org.apache.kafka.connect.errors.ConnectException
 import org.slf4j.LoggerFactory
 
 import scala.reflect.ClassTag
@@ -19,7 +20,7 @@ object ExecuteWithExceptions {
     * @tparam TE Technical Exception type
     * @tparam BE Connector Exception type
     */
-  def defaultThrowException[TE <: Exception, BE <: ConnectorException](exception: TE,
+  def defaultThrowException[TE <: Exception, BE <: ConnectException](exception: TE,
                                                                        connectorException: BE): BE = {
     log.error(exception.getMessage)
     connectorException.initCause(exception)
@@ -34,7 +35,7 @@ object ExecuteWithExceptions {
     * @tparam BE Connector Exception type
     * @return The block execution result
     */
-  def apply[O, TE <: Exception: ClassTag, BE <: ConnectorException](connectorException: BE)(block: () => O,
+  def apply[O, TE <: Exception: ClassTag, BE <: ConnectException](connectorException: BE)(block: () => O,
                                                                                             doCatch: (TE, BE) => BE = defaultThrowException[TE, BE] _): O = {
     try {
       block()
