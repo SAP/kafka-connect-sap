@@ -71,7 +71,7 @@ class AvroLogicalTypesTest extends FunSuite {
     assert(structs.size === 1)
     val head = structs.head
 
-    val actualDateField = head.get("date_field").toString
+    val actualDateField = simpleDateFormat.format(head.get("date_field"))
     assert(expectedDateField === actualDateField)
   }
 
