@@ -66,7 +66,7 @@ The full list of configuration options for `kafka connector for SAP Systems` is 
 
     * `batch.size` - This setting can be used to specify the number of records that can be pushed into SAP DB table in a single flush. Should be an `Integer`. Default is `3000`.
 
-    * `max.retries` - This setting can be used to specify the maximum no. of retries that can be made to re-establish the connection to SAP DB in case the connection is lost. Should be an `Integer`. Default is `10`.
+    * `max.retries` - (deprecated) This setting can be used to specify the maximum no. of retries that can be made to re-establish the connection to SAP DB in case the connection is lost. Should be an `Integer`. Default is `10`. This property is currently ignored as the task will automatically retry when a connection error results in a RetriableException for both source and sink tasks.
 
     * `{topic}.table.name` - This setting allows specifying the SAP DBs table name where the data needs to be written to. Should be a `String`. Must be compatible to SAP DB Table name like `"SCHEMA"."TABLE"`.
 

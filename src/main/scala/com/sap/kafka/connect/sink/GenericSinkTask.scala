@@ -16,7 +16,6 @@ abstract class GenericSinkTask extends SinkTask with SinkWriter   {
     var log: Logger = _
     var config:BaseConfig = null
     var writer:BaseWriter = null
-    private var retriesLeft:Int = 0
 
     /**
      * Pass the SinkRecords to the writer for Writing
@@ -25,7 +24,6 @@ abstract class GenericSinkTask extends SinkTask with SinkWriter   {
       log.info(s"PHASE - 1 - get records from kafka, Started for task with assigned " +
         s"partitions ${this.context.assignment().toString} ")
       log.info(s"Number of Records read for Sink: ${records.size}")
-      retriesLeft = config.maxRetries
       if (records.isEmpty) {
         return
       }
@@ -35,22 +33,10 @@ abstract class GenericSinkTask extends SinkTask with SinkWriter   {
         writer.write(records)
       } catch  {
         case exception : ConnectException =>
-          log.error("Write of {} records failed, remainingRetries={}", records.size(), retriesLeft)
-          while (retriesLeft > 0) {
-            try {
-              retriesLeft = retriesLeft - 1
-              writer.close()
-              writer = initWriter(config)
-              writer.write(records)
-              retriesLeft = -1
-            } catch {
-              case exception: ConnectException =>
-                // ignore
-            }
-          }
-
-          if (retriesLeft == 0)
-            throw exception
+          log.error(s"Write of ${records.size} records failed, may retry later ...")
+          writer.close()
+          writer = initWriter(config)
+          throw exception
       } finally {
         log.info(s"PHASE - 1 ended for task, with assigned partitions ${this.context.assignment().toString}")
       }
