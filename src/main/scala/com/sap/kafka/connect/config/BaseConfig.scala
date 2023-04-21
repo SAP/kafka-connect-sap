@@ -31,6 +31,7 @@ abstract class BaseConfig(props: Map[String, String]) {
     * Max retries for sink. Should be an integer.
     * Default is 10.
     */
+  @deprecated("Retries are handled by the task","20-04-2023")
   def maxRetries = props.getOrElse[String]("max.retries", "1").toInt
 
   /**

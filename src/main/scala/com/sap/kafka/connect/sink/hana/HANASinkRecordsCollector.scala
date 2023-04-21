@@ -18,12 +18,13 @@ import scala.collection.mutable
 
 
 class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
-                               connection: Connection, config: HANAConfig) {
+                               config: HANAConfig) {
   private val log: Logger = LoggerFactory.getLogger(classOf[HANASinkTask])
   private var records: Seq[SinkRecord] = Seq[SinkRecord]()
   private var tableMetaData:Seq[metaAttr] = Seq[metaAttr]()
   private var metaSchema: MetaSchema = null
   var tableConfigInitialized = false
+
 
   private def initTableConfig(nameSpace: Option[String], tableName: String, topic: String) : Boolean = {
 
@@ -175,7 +176,7 @@ class HANASinkRecordsCollector(var tableName: String, client: HANAJdbcClient,
     this.records = records
   }
 
-  private[sink] def flush(): Seq[SinkRecord] = {
+  private[sink] def flush(connection: Connection): Seq[SinkRecord] = {
     val flushedRecords = records
     if (!records.isEmpty) {
       val insertMode = config.topicProperties(records.head.topic())("insert.mode")

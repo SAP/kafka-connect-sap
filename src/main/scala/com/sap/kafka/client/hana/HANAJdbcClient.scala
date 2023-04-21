@@ -53,7 +53,7 @@ case class HANAJdbcClient(hanaConfiguration: HANAConfig)  {
    * @return The created JDBC [[Connection]] object
    */
    def getConnection: Connection = {
-     ExecuteWithExceptions[Connection, HANAConnectorException, HANAJdbcConnectionException] (
+     ExecuteWithExceptions[Connection, HANAConnectorRetriableException, HANAJdbcConnectionException] (
       new HANAJdbcConnectionException("Cannot acquire a connection")) { () =>
        val connectionUser: String = hanaConfiguration.connectionUser
        val connectionPassword: String = hanaConfiguration.connectionPassword

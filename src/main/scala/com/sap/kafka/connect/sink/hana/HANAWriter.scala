@@ -23,9 +23,11 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
 
   override def initializeConnection(): Unit = {
     if (connection != null && !connection.isValid(120)) {
+      log.debug("initializeConnection the current connection is invalid, closing it")
       connection.close()
     }
     if(connection == null || connection.isClosed ) {
+      log.debug("initializeConnection creating a connection")
       connection = hanaClient.getConnection
     }
   }
@@ -33,8 +35,6 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
 
   override def write(records: util.Collection[SinkRecord]): Unit = {
     log.info("write records to HANA")
-    log.info("initialize connection to HANA")
-
     initializeConnection()
 
     val topicMap = Multimaps.index(records, new Function[SinkRecord, String] {
@@ -51,7 +51,7 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
 
       recordsCollector match {
         case None =>
-          val tableRecordsCollector = new HANASinkRecordsCollector(table, hanaClient, connection, config)
+          val tableRecordsCollector = new HANASinkRecordsCollector(table, hanaClient, config)
           tableCache.put(table, tableRecordsCollector)
           tableRecordsCollector.add(collectionAsScalaIterableConverter(recordsPerTopic).asScala.toSeq)
         case Some(tableRecordsCollector) =>
@@ -70,7 +70,7 @@ class HANAWriter(config: HANAConfig, hanaClient: HANAJdbcClient,
   private def flush(tableCache: Map[String, HANASinkRecordsCollector]): Unit = {
     log.info("flush records into HANA")
     for ((table, recordsCollector) <- tableCache) {
-        recordsCollector.flush()
+        recordsCollector.flush(connection)
     }
     hanaClient.commit(connection)
   }
