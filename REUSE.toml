@@ -1,0 +1,9 @@
+version = 1
+SPDX-PackageName = "Kafka Connect SAP"
+SPDX-PackageDownloadLocation = "https://github.com/SAP/kafka-connect-sap"
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2015-2021 SAP SE or an SAP affiliate company and kafka-connect-sap contributors"
+SPDX-License-Identifier = "Apache-2.0"
